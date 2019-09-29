@@ -1,0 +1,8 @@
+---
+EXPORTER_VERSION: "1.1.0"
+
+ES_EXPORTER_INSTALL_DIR: "/opt/elasticsearch_exporter"
+ES_EXPORTER_BINARY_PATH: "{{ ES_EXPORTER_INSTALL_DIR }}/elasticsearch_exporter"
+ES_IP: "locahost"
+ES_URI: "http://{{ES_IP}}:9200"
+ES_TIMEOUT: "120s"

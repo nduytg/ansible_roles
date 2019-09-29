@@ -1,0 +1,28 @@
+---
+- name: Setup Monitoring Services
+  hosts: prometheus_group
+  become: yes
+  become_user: root
+
+  # Ensure Python is installed on remote node
+  gather_facts: False
+  pre_tasks:
+   - name: Install python for Ansible
+     raw: test -e /usr/bin/python || test -e /usr/bin/python3 || (apt -y update && apt install -y python)
+     changed_when: False
+   - setup: # aka gather_facts
+
+  roles:
+      - mysql
+     #- prometheus
+     #- alertmanager
+     #- pushgateway
+     #- thanos-sidecar
+     #- thanos-query
+     #- autosyncmesos
+     #- consul
+     #- grafana
+     #- vsftpd
+     #- iptables-persistent
+     #- elasticsearch_exporter
+     #- m3-single-node

@@ -1,0 +1,23 @@
+[Unit]
+Description=Thanos Query
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-abnormal
+User=thanos
+Group=thanos
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/thanos query \
+    --query.replica-label replica \
+    --http-address        0.0.0.0:19192 \
+    {% for i in STORE_LIST %}
+        {% if not loop.last %}
+        --store {{ i }} \
+        {% else %}
+        --store {{ i }} 
+        {% endif %}
+    {% endfor %}
+    
+[Install]
+WantedBy=multi-user.target

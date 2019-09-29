@@ -1,0 +1,105 @@
+---
+###### Setup Prometheus Server####
+  #- name: get all ip
+  #  debug: 
+  #    var: ansible_facts
+
+- name: get all ip
+  debug: 
+    var: ansible_all_ipv4_addresses
+
+- name: get default ip
+  debug: 
+    var: ansible_default_ipv4.address
+
+- name: Add group Prometheus
+  group: 
+    name: prometheus
+    state: present
+
+- name: Add user Prometheus
+  user: 
+    name: prometheus
+    group: prometheus
+    state: present
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Setup Prometheus folders
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+  with_items:
+    - /opt/prometheus
+    - /var/prometheus
+    - /etc/prometheus/auto_sync_mesos_address
+    - /etc/prometheus/targets
+    - /etc/promtheus/pushgw_targets
+    - /etc/prometheus/rules/alerts
+    - /etc/prometheus/rules/records
+
+- name: Download prometheus tar ball
+  get_url: 
+    url: https://github.com/prometheus/prometheus/releases/download/v{{PROMETHEUS_VERSION}}/prometheus-{{PROMETHEUS_VERSION}}.linux-amd64.tar.gz
+    dest: /opt/prometheus/prometheus-{{PROMETHEUS_VERSION}}.linux-amd64.tar.gz
+
+- name: Unarchive prometheus tar ball
+  unarchive:
+    src: /opt/prometheus/prometheus-{{PROMETHEUS_VERSION}}.linux-amd64.tar.gz
+    dest: /opt/prometheus/
+    remote_src: yes
+    extra_opts: "--strip-components=1"
+
+- name: Copy binary files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  with_items:
+      - { src: '/opt/prometheus/prometheus', dest: '/usr/local/bin/' }
+      - { src: '/opt/prometheus/promtool', dest: '/usr/local/bin/' }
+  notify:
+    - restart prometheus
+
+- name: Copy console files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  with_items:
+    - { src: '/opt/prometheus/consoles', dest: '/etc/prometheus' }
+    - { src: '/opt/prometheus/console_libraries', dest: '/etc/prometheus' }
+  notify:
+    - restart prometheus
+
+- name: Copy config files
+  template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+  notify:
+  - reload prometheus
+
+- name: Copy systemd file
+  template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+  notify:
+    - restart prometheus
+
+- name: Allow intra net access to Prometheus
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '9090'
+    jump: ACCEPT

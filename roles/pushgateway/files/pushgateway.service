@@ -1,0 +1,14 @@
+[Unit]
+Description=Pushgateway
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=pushgateway
+Group=pushgateway
+Type=simple
+ExecStart=/usr/local/bin/pushgateway     --persistence.file="/var/pushgateway/data"
+ExecReload=/bin/kill -HUP 
+
+[Install]
+WantedBy=multi-user.target

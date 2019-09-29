@@ -1,0 +1,39 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    file_sd_configs:
+      - files:
+        - targets/*.json
+        - targets/*.yml
+        refresh_interval: 5m
+  
+  - job_name: pushgateway
+    honor_labels: true
+    file_sd_configs:
+      - files:
+        - pushgw_targets/*.json
+        refresh_interval: 5m 
+
+  - job_name: test-sd
+    consul_sd_configs:
+      - server: '{{ CONSUL_SERVER }}:8500'
+
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*,metrics,.*
+        action: keep
+
+# rule folder
+rule_files:
+  - rules/alerts/*.json
+  - rules/records/*.json
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - '{{ ALERTMANAGER_SERVER }}:9093'
+

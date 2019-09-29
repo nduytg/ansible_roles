@@ -1,0 +1,3 @@
+---
+# defaults file for alertmanager
+ALERTMANAGER_VERSION: "0.17.0"

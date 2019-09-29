@@ -1,0 +1,5 @@
+---
+FTP_USER: ftpuser
+FTP_PASSWORD: password
+PASV_MIN_PORT: 10100
+PASV_MAX_PORT: 10150

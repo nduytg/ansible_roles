@@ -1,0 +1,18 @@
+---
+- name: restart thanos sidecar
+  listen:
+    - restart thanos-sidecar
+  become: true
+  systemd:
+    daemon_reload: true
+    name: thanos-sidecar
+    state: restarted
+    enabled: yes
+
+- name: reload thanos-sidecar
+  listen:
+    - reload thanos-sidecar
+  become: true
+  systemd:
+    name: thanos-sidecar
+    state: reloaded

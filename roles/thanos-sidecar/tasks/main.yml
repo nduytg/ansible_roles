@@ -1,0 +1,81 @@
+---
+###### Setup Thanos Sidecar####
+
+- name: get all ip
+  debug: 
+    var: ansible_all_ipv4_addresses
+
+- name: get default ip
+  debug: 
+    var: ansible_default_ipv4.address
+
+- name: Add group Thanos
+  group: 
+    name: thanos
+    state: present
+
+- name: Add user Thanos
+  user: 
+    name: thanos
+    group: thanos
+    state: present
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Setup Thanos folders
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: thanos
+    group: thanos
+  with_items:
+    - /opt/thanos
+    - /etc/thanos/sidecar
+
+- name: Download thanos tar ball
+  get_url: 
+    url: https://github.com/thanos-io/thanos/releases/download/v{{THANOS_VERSION}}/thanos-{{THANOS_VERSION}}.linux-amd64.tar.gz
+    dest: /opt/thanos/thanos-{{THANOS_VERSION}}.linux-amd64.tar.gz
+
+- name: Unarchive thanos tar ball
+  unarchive:
+    src: /opt/thanos/thanos-{{THANOS_VERSION}}.linux-amd64.tar.gz
+    dest: /opt/thanos/
+    remote_src: yes
+    extra_opts: "--strip-components=1"
+
+- name: Copy binary files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+    owner: thanos
+    group: thanos
+    mode: '0755'
+  with_items:
+      - { src: '/opt/thanos/thanos', dest: '/usr/local/bin/' }
+  notify:
+    - restart thanos-sidecar
+
+- name: Copy systemd file
+  template:
+    src: thanos-sidecar.service
+    dest: /etc/systemd/system/thanos-sidecar.service
+  notify:
+    - restart thanos-sidecar
+
+- name: Allow intra net access to HTTP endpoint for collecting metrics on sidecar
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '19191'
+    jump: ACCEPT
+
+- name: Allow intra net access to GRPC endpoint for StoreAPI
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '19090'
+    jump: ACCEPT

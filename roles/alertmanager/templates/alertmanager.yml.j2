@@ -1,0 +1,24 @@
+global:
+  smtp_smarthost: 'localhost:25'
+  smtp_from: 'alertmanager@cloudcraft.info'
+  smtp_auth_username: ''
+  smtp_auth_password: ''
+  smtp_require_tls: false
+
+route:
+  repeat_interval: 1h
+  receiver: cloudcraft-team
+
+receivers:
+- name: cloudcraft-team
+  slack_configs:
+    - api_url: "https://slack.com/hooks/abcdefgh12345678"
+      channel: "#deep-devops-kafka"
+      send_resolved: true
+      {%raw%}
+      title: '{{ template "custom_title" . }}'
+      text: '{{ template "custom_slack_message" . }}'
+      {%endraw%}
+
+templates:
+- ./noti_templates/notifications.tmpl

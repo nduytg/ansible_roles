@@ -1,0 +1,3 @@
+---
+# vars file for consul
+CONSUL_VERSION: "1.5.0"

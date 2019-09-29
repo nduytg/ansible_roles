@@ -1,0 +1,104 @@
+---
+# tasks file for consul
+- name: get all ip
+  debug: 
+    var: ansible_all_ipv4_addresses
+
+- name: get default ip
+  debug: 
+    var: ansible_default_ipv4.address
+
+- name: Add group Consul
+  group: 
+    name: consul
+    state: present
+
+- name: Add user Consul
+  user: 
+    name: consul
+    group: consul
+    state: present
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Setup Consul folders
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: consul
+    group: consul
+  with_items:
+    - /opt/consul
+    - /var/consul
+    - /etc/consul.d
+
+- name: Install unzip command
+  yum: 
+    update_cache: yes
+    name: 
+      - unzip
+    state: present
+
+- name: Download consul tar ball
+  get_url: 
+    url: https://releases.hashicorp.com/consul/{{CONSUL_VERSION}}/consul_{{CONSUL_VERSION}}_linux_amd64.zip
+    dest: /opt/consul/consul_{{CONSUL_VERSION}}_linux_amd64.zip
+
+- name: Unzip consul zip file
+  unarchive:
+    src: /opt/consul/consul_{{CONSUL_VERSION}}_linux_amd64.zip
+    dest: /opt/consul/
+    remote_src: yes
+
+- name: Copy binary files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+    owner: consul
+    group: consul
+    mode: '0755'
+  with_items:
+      - { src: '/opt/consul/consul', dest: '/usr/local/bin/' }
+  notify:
+    - restart consul
+
+- name: Copy config files
+  template:
+    src: consul.json.j2
+    dest: /etc/consul.d/consul.json
+    owner: consul
+    group: consul
+  notify:
+  - reload consul
+
+- name: Copy systemd file
+  copy:
+    src: consul.service
+    dest: /etc/systemd/system/consul.service
+  notify:
+    - restart consul
+
+- name: Allow intra net access to Consul TCP
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '8300'
+    jump: ACCEPT
+
+- name: Allow intra net access to Consul HTTP API
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '8500'
+    jump: ACCEPT
+
+- name: Allow intra net access to Consul DNS
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '8600'
+    jump: ACCEPT

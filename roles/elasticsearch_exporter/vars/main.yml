@@ -1,0 +1,8 @@
+---
+EXPORTER_VERSION: "1.1.0"
+ES_EXPORTER_INSTALL_DIR: "/opt/elasticsearch_exporter"
+ES_EXPORTER_BINARY_PATH: "{{ ES_EXPORTER_INSTALL_DIR }}/elasticsearch_exporter"
+ES_IP: "10.0.0.111"
+ES_PORT: "30201"
+ES_URI: "http://{{ES_IP}}:{{ES_PORT}}"
+ES_TIMEOUT: "120s"

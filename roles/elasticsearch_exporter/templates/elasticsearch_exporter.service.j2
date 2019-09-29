@@ -1,0 +1,20 @@
+[Unit]
+Description=Elasticsearch Exporter
+After=network.target
+
+[Service]
+User=elasticsearch_exporter
+Group=elasticsearch_exporter
+Type=simple
+Restart=on-failure
+ExecStart={{ ES_EXPORTER_BINARY_PATH }} \
+            --es.uri {{ ES_URI }} \
+            --es.all \
+            --es.timeout={{ ES_TIMEOUT }} \
+            --es.ssl-skip-verify \
+            --es.indices \
+            --es.shards \
+            --es.clusterinfo.interval=15s
+
+[Install]
+WantedBy=multi-user.target

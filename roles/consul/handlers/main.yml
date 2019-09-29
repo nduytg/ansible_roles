@@ -1,0 +1,15 @@
+---
+# handlers file for consul
+- name: restart consul
+  become: true
+  systemd:
+    daemon_reload: true
+    name: consul
+    state: restarted
+    enabled: yes
+
+- name: reload consul
+  become: true
+  systemd:
+    name: consul
+    state: reloaded

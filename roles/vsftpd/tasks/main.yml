@@ -1,0 +1,68 @@
+---
+##################################### INSTALL VSFTPD ##################################
+
+- name: Install Packages for vsftpd
+  apt:
+   name: vsftpd
+   state: present
+
+- name: Add group ftp
+  group: 
+    name: ftp
+    state: present
+
+- name: Create FTP user "{{ FTP_USER }}"
+  user:
+    name: "{{ FTP_USER }}"
+    password: "{{ FTP_PASSWORD | password_hash('sha512') }}"
+    shell: /usr/sbin/nologin
+    home: /home/ftp
+    group: ftp
+
+- name: Backup vsftpd.conf
+  copy:
+    src: /etc/vsftpd.conf
+    dest: /etc/vsftpd.conf.bak
+    remote_src: true
+
+- name: Copy vsftpd.conf template
+  template:
+    src: vsftpd.conf.j2
+    dest: /etc/vsftpd.conf
+
+- name: Copy vsftpd.user_list template
+  template:
+    src: vsftpd.user_list
+    dest: /etc/vsftpd.user_list
+
+- name: Add /usr/sbin/nologin to /etc/shells
+  lineinfile:
+    path: /etc/shells
+    line: "/usr/sbin/nologin"
+
+- name: Add /usr/sbin/nologin to /etc/shells
+  lineinfile:
+    path: /etc/shells
+    line: "/usr/sbin/nologin"
+
+- name: Start Vsftpd Service
+  service: 
+    name: vsftpd 
+    state: started 
+    enabled: true
+
+- name: Allow intra net access to vsftpd
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '21'
+    jump: ACCEPT
+
+- name: Allow intra net access to vsftpd (passv ports)
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: "{{ PASV_MIN_PORT }}:{{ PASV_MAX_PORT }}"
+    jump: ACCEPT
