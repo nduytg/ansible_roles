@@ -35,4 +35,4 @@ BSD
 Author Information
 ------------------
 
-duy.nguyen@shopee.com
+nduytg@gmail.com
