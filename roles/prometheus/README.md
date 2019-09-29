@@ -17,7 +17,7 @@ Role Variables
 * RETENTION_TIME: "90d"
 * CONSUL_SERVER: {{ server_ip }}
 * ALERTMANAGER_SERVER: {{ server_ip }}
-* THANOS_TEAM: "deep-devops"
+* THANOS_TEAM: "cloudcraft-devops"
 * THANOS_ENV: {{ env }}
 * THANOS_REPLICA_TAG: {{ tag_for_deduplication }}
 
