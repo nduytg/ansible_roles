@@ -1,0 +1,22 @@
+---
+- name: Ensure old versions of Docker are not installed.
+  apt:
+    update_cache: yes
+    name:
+      - docker
+      - docker-common
+      - docker-engine
+    state: absent
+
+- name: Add Docker GPG key.
+  rpm_key:
+    key: https://download.docker.com/linux/centos/gpg
+    state: present
+
+- name: Add Docker repository.
+  get_url:
+    url: "{{ docker_yum_repo_url }}"
+    dest: '/etc/yum.repos.d/docker-{{ docker_edition }}.repo'
+    owner: root
+    group: root
+    mode: 0644
