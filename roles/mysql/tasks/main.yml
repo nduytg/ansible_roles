@@ -28,6 +28,11 @@
     source: 10.0.0.0/8
     destination_port: '3306'
     jump: ACCEPT
+
+- name: Save iptables rules to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 3306 -j ACCEPT'
     
 
 

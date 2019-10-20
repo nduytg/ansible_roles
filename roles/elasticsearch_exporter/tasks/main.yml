@@ -57,3 +57,8 @@
     source: 10.0.0.0/8
     destination_port: '9114'
     jump: ACCEPT
+
+- name: Save iptables rules to /etc/sysconfig/iptables (9114)
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 9114 -j ACCEPT'
