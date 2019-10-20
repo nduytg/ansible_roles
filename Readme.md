@@ -36,8 +36,14 @@ Supported Roles
   - [x] Grafana
   - [x] Thanos (Query)
   - [x] Thanos (Sidecar)
-- [ ] Service Discovery
+  - [x] Prometheus Exporter
+    - [x] ElasitcSearch Exporter
+    - [x] ElasitcSearch Exporter (Docker)
+- [x] Service Discovery
   - [x] Consul
+- [x] Misc
+  - [x] MySQL
+  - [x] Docker
 
 Suported OS
 
