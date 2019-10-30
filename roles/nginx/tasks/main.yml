@@ -1,0 +1,172 @@
+---
+# tasks file for nginx
+- name: get default ip
+  debug: 
+    var: ansible_default_ipv4.address
+
+- name: Installing NGINX Dependencies
+  become: yes
+  apt:
+    name: ['libssl-dev', 
+            'zlib1g-dev', 
+            'libpcre3', 
+            'libpcre3-dev']
+    update_cache: yes
+  tags: 
+    - install
+
+- name: Add group nginx
+  group: 
+    name: nginx
+    state: present
+  tags: 
+    - install
+
+- name: Add user nginx
+  user: 
+    name: nginx
+    group: nginx
+    state: present
+    shell: /usr/sbin/nologin
+    create_home: false
+  tags: 
+    - install
+
+- name: Setup nginx folders
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: nginx
+    group: nginx
+  with_items:
+    - "{{ nginx_build_dir }}"
+    - "{{ nginx_conf_dir }}"
+    - "{{ nginx_upstream_dir }}"
+    - "{{ nginx_upstream_dir }}/http"
+    - "{{ nginx_upstream_dir }}/stream"
+    - "{{ nginx_var_dir }}"
+    - "{{ nginx_var_dir }}/cache"
+    - "{{ nginx_var_dir }}/tmpcache"
+    - "{{ nginx_log_dir}}"
+    - "{{ nginx_http_log_dir }}"
+    - "{{ nginx_stream_log_dir }}"
+  tags: 
+    - install
+
+- name: Download nginx tar ball
+  get_url: 
+    url: http://nginx.org/download/nginx-{{nginx_version}}.tar.gz
+    dest: "{{nginx_build_dir}}/nginx-{{nginx_version}}.tar.gz"
+  tags: 
+    - install
+    - upgrade
+
+- name: Unarchive nginx tar ball
+  unarchive:
+    src: "{{nginx_build_dir}}/nginx-{{nginx_version}}.tar.gz"
+    dest: "{{nginx_build_dir}}/"
+    remote_src: yes
+    extra_opts: "--strip-components=1"
+  tags: 
+    - install
+    - upgrade
+
+- name: Git clone nginx VTS module for monitoring
+  git:
+    repo: 'git://github.com/vozlt/nginx-module-vts.git'
+    dest: "{{nginx_build_dir}}/nginx-module-vts/"
+    clone: yes
+
+- name: Configuring NGINX source with custom modules
+  command: "./configure \
+            --user={{ nginx_user }}
+            --group={{ nginx_group }}
+            --sbin-path={{nginx_bin_path}} \
+            --conf-path={{ nginx_conf_dir }}/nginx.conf \
+            {{ nginx_custom_modules }}"
+  args:
+    chdir: "{{ nginx_build_dir }}"
+  register: nginx_configure
+  tags: 
+    - install
+    - upgrade
+
+- name: Compile NGINX
+  become: yes
+  shell: make -j32 && make install
+  args:
+    chdir: "{{ nginx_build_dir }}"
+  when: nginx_configure is changed
+  notify:
+  - restart nginx
+  tags: 
+    - install
+    - upgrade
+
+- name: Copy Nginx config files
+  become: yes
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: 0644
+  with_items:
+    - { src: 'nginx.conf.j2', dest: '{{ nginx_conf_dir }}/nginx.conf' }
+    - { src: 'proxy.conf.j2', dest: '{{ nginx_conf_dir }}/proxy.conf' }
+    - { src: 'default.conf.j2', dest: '{{ nginx_upstream_dir }}/default.conf' }
+    - { src: 'stub_status.conf.j2', dest: '{{ nginx_upstream_dir }}/stub_status.conf' }
+    - { src: 'logrotate_nginx.j2', dest: '/etc/logrotate.d/nginx' }   
+  tags: 
+    - install
+    - configure
+
+- name: Copy systemd file
+  template:
+    src: nginx.service.j2
+    dest: /etc/systemd/system/nginx.service
+  notify:
+    - restart nginx
+  tags: 
+    - install
+
+- name: Allow intra net access to nginx
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '80'
+    jump: ACCEPT
+  tags: 
+    - install
+
+- name: Save iptables rules to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 80 -j ACCEPT'
+
+- name: Allow intra net access to nginx
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '8080'
+    jump: ACCEPT
+  tags: 
+    - install
+
+- name: Save iptables rules to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8080 -j ACCEPT'
+  tags: 
+    - install
+
+# - name: Clean setup folder
+#   file:
+#     path: "{{ nginx_build_dir }}"
+#     state: absent
+#   tags: 
+#     - install

@@ -1,0 +1,73 @@
+user  nginx;
+worker_processes  auto;
+
+error_log  {{nginx_var_dir}}/logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+pid        /var/run/nginx.pid;
+
+
+events {
+        worker_connections 2048; # increase for busier servers
+        use epoll; # you should use epoll here for Linux kernels 2.6.x
+		multi_accept on;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request"'
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  {{ nginx_http_log_dir }}/access.log  main;
+
+    # For monitoring
+    vhost_traffic_status_zone;
+
+    sendfile        on;
+    tcp_nopush     on;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    gzip  on;
+    gzip_buffers 16 8k;
+    gzip_comp_level 6;
+    gzip_http_version 1.1;
+    gzip_min_length 256;
+    gzip_proxied any;
+    gzip_vary on;
+    gzip_types
+        text/xml application/xml application/atom+xml application/rss+xml application/xhtml+xml image/svg+xml
+        text/javascript application/javascript application/x-javascript
+        text/x-json application/json application/x-web-app-manifest+json
+        text/css text/plain text/x-component
+        font/opentype application/x-font-ttf application/vnd.ms-fontobject
+        image/x-icon;
+
+    proxy_temp_path /var/nginx/tmpcache 1 2;
+    proxy_cache_path /var/nginx/cache levels=1:2 keys_zone=kibana_cache:10m max_size=10g
+                 inactive=60m use_temp_path=off;
+
+    # Include proxy parameters
+    include /etc/nginx/conf.d/*.conf;
+
+    # Include HTTP backend
+    include /etc/nginx/conf.d/http/*.conf;
+}
+
+stream {
+    log_format main '$remote_addr [$time_local] '
+                 '$protocol $status $bytes_sent $bytes_received '
+                 '$session_time "$upstream_addr" '
+                 '"$upstream_bytes_sent" "$upstream_bytes_received" "$upstream_connect_time"';
+
+    access_log  {{ nginx_stream_log_dir }}/access.log  main;
+
+    # Include stream TCP/UDP backend
+    include /etc/nginx/conf.d/stream/*.conf;
+}

@@ -1,0 +1,34 @@
+---
+# defaults file for nginx
+# Should use mainline version in default config
+nginx_version: 1.16.1
+
+# Build from source parameters
+nginx_user: "nginx"
+nginx_group: "nginx"
+
+nginx_build_dir: "/tmp/nginx"
+nginx_conf_dir: "/etc/nginx"
+nginx_var_dir: "/var/nginx"
+nginx_log_dir: "/var/nginx/logs"
+nginx_http_log_dir: "/var/nginx/logs/http"
+nginx_stream_log_dir: "/var/nginx/logs/stream"
+nginx_bin_path: "/usr/local/bin/nginx"
+nginx_conf_path: "/etc/nginx/nginx.conf"
+nginx_upstream_dir: "/etc/nginx/conf.d"
+nginx_custom_modules: "--with-http_auth_request_module \
+                      --with-http_ssl_module \
+                      --with-http_v2_module \
+                      --with-http_realip_module \
+                      --with-http_gzip_static_module \
+                      --with-http_auth_request_module \
+                      --with-http_stub_status_module \
+                      --with-debug \
+                      --with-stream \
+                      --with-stream_ssl_module \
+                      --with-stream_realip_module \
+                      --add-module=/tmp/nginx/nginx-module-vts" 
+
+# Install Nginx modules
+nginx_modules:
+  geoip: false

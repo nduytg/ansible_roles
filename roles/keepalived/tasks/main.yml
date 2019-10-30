@@ -1,0 +1,85 @@
+---
+# tasks file for keepalived
+- name: get default ip
+  debug: 
+    var: ansible_default_ipv4.address
+
+- name: Install Keepalived Dependencies
+  apt: 
+    update_cache: yes
+    name: 
+      - libssl-dev
+    state: present
+
+- name: Add user keepalived_script for running script
+  user: 
+    name: keepalived_script
+    state: present
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Setup keepalived folders
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ keepalived_build_dir }}"
+    - "{{ keepalived_conf_dir }}"
+
+- name: Download keepalived tar ball
+  get_url: 
+    url: https://www.keepalived.org/software/keepalived-{{keepalived_version}}.tar.gz
+    dest: "{{keepalived_build_dir}}/keepalived-{{keepalived_version}}.tar.gz"
+
+- name: Unarchive keepalived tar ball
+  unarchive:
+    src: "{{keepalived_build_dir}}/keepalived-{{keepalived_version}}.tar.gz"
+    dest: "{{keepalived_build_dir}}/"
+    remote_src: yes
+    extra_opts: "--strip-components=1"
+
+- name: Configuring keepalived source with custom modules
+  command: "./configure \
+            --sbindir={{keepalived_sbin_dir}}"
+  args:
+    chdir: "{{ keepalived_build_dir }}"
+  register: keepalived_configure
+
+- name: Compile keepalived
+  become: yes
+  shell: make -j{{ ansible_processor_cores }} && make install
+  args:
+    chdir: "{{ keepalived_build_dir }}"
+  when: keepalived_configure is changed
+  notify:
+  - restart keepalived
+
+- name: Copy keepalived config files
+  become: yes
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  with_items:
+    - { src: 'keepalived.conf.j2', dest: '{{ keepalived_conf_dir }}/keepalived.conf' }
+
+- name: Copy keepalived check process scripts
+  become: yes
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0755
+  with_items:
+    - { src: 'checknginx.sh', dest: '{{ keepalived_conf_dir }}/checknginx.sh' }
+
+- name: Copy systemd file
+  copy:
+    src: keepalived.service
+    dest: /etc/systemd/system/keepalived.service
+  notify:
+    - restart keepalived
+
+- name: Clean setup folder
+  file:
+    path: "{{ keepalived_build_dir }}"
+    state: absent

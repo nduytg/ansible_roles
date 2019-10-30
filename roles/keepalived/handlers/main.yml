@@ -1,0 +1,13 @@
+---
+# handlers file for keepalived
+- name: restart keepalived
+  systemd:
+    name: keepalived
+    daemon_reload: true
+    state: restarted
+    enabled: yes
+    
+- name: reload keepalived
+  systemd:
+    name: keepalived
+    state: reloaded
