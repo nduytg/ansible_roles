@@ -115,7 +115,20 @@
     - { src: 'nginx.conf.j2', dest: '{{ nginx_conf_dir }}/nginx.conf' }
     - { src: 'proxy.conf.j2', dest: '{{ nginx_conf_dir }}/proxy.conf' }
     - { src: 'default.conf.j2', dest: '{{ nginx_upstream_dir }}/default.conf' }
-    - { src: 'stub_status.conf.j2', dest: '{{ nginx_upstream_dir }}/stub_status.conf' }
+    - { src: 'nginx_status.conf.j2', dest: '{{ nginx_upstream_dir }}/nginx_status.conf' }
+  tags: 
+    - install
+    - configure
+
+- name: Setup logrotate for nginx
+  become: yes
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
     - { src: 'logrotate_nginx.j2', dest: '/etc/logrotate.d/nginx' }   
   tags: 
     - install

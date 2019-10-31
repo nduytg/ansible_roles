@@ -46,4 +46,4 @@ BSD
 Author Information
 ------------------
 
-nduytg@gmail.com
+duy.nguyen@shopee.com

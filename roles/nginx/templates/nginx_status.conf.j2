@@ -5,6 +5,8 @@ server {
         }
 
         location /status {
+            vhost_traffic_status_bypass_limit on;
+            vhost_traffic_status_bypass_stats on;
             vhost_traffic_status_display;
             vhost_traffic_status_display_format html;
         }
