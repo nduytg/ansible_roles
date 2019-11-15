@@ -81,3 +81,13 @@
     source: 10.0.0.0/8
     destination_port: '19092'
     jump: ACCEPT
+
+- name: Save iptables rules to /etc/sysconfig/iptables (19192)
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 19192 -j ACCEPT'
+
+- name: Save iptables rules to /etc/sysconfig/iptables (19092)
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 19092 -j ACCEPT'    

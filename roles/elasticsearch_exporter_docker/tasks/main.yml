@@ -1,0 +1,68 @@
+---
+###### Setup ES Exporter on Docker ####
+- name: get all ip
+  debug: 
+    var: ansible_all_ipv4_addresses
+
+- name: get default ip
+  debug: 
+    var: ansible_default_ipv4.address
+
+- name: Ensure docker python module for ansible is installed
+  pip:
+    name: 
+      - docker
+      - docker-compose
+
+- name: Create ES Exporter container
+  docker_compose:
+    project_name: "{{PROJECT_NAME}}"
+    definition:
+      version: "3.7"
+      services:
+        es_exporter:
+          container_name: "{{CONTAINER_NAME}}"
+          image: justwatch/elasticsearch_exporter:{{ EXPORTER_VERSION }}
+          deploy:
+            restart_policy:
+              condition: on-failure
+              delay: 5s
+              max_attempts: 3
+          command: 
+          - '--web.listen-address={{ LISTEN_URI }}'
+          - '--es.uri={{ ES_URI }}'
+          - '--es.all'
+          - '--es.timeout={{ ES_TIMEOUT }}'
+          - '--es.ssl-skip-verify'
+          - '--es.indices'
+          - '--es.shards'
+          - '--es.clusterinfo.interval=15s'
+          ports:
+            - "0.0.0.0:{{ HOST_PORT }}:{{ LISTEN_PORT }}"
+  register: output
+
+- name: Debug install container using docker-compose module
+  debug:
+    var: output
+
+- name: Debug install container using docker-compose module
+  debug:
+    var: ES_URI
+
+- name: Debug install container using docker-compose module
+  debug:
+    var: LISTEN_URI
+
+- name: Allow intra net access to ES Exporter
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '{{ HOST_PORT }}'
+    jump: ACCEPT
+
+- name: Save iptables rules to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport {{ HOST_PORT }} -j ACCEPT'

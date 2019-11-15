@@ -36,8 +36,29 @@ Supported Roles
   - [x] Grafana
   - [x] Thanos (Query)
   - [x] Thanos (Sidecar)
-- [ ] Service Discovery
+  - [x] Prometheus Exporters
+    - [x] ElasitcSearch Exporter
+    - [x] ElasitcSearch Exporter (Docker)
+- [ ] Proxy/LB
+  - [x] Nginx
+  - [ ] NginxMonitor
+    - [ ] VTS Module
+    - [ ] Nginx Exporters
+      - [ ] 1..
+      - [ ] 2..
+- [ ] High Availability
+  - [x] keepalived
+- [x] Service Discovery
   - [x] Consul
+- [ ] ELK Stack
+  - [x] ElasticSearch
+  - [x] LogStack
+  - [x] Kibana
+  - [ ] Filebeat
+  - [ ] MetricBeat
+- [x] Misc
+  - [x] MySQL
+  - [x] Docker
 
 Suported OS
 

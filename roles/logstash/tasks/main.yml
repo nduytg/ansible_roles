@@ -1,0 +1,12 @@
+---
+- name: Include OS Specific setup tasks
+  include: install_ubuntu.yml
+
+- include: setup_config.yml
+- include: install_plugins.yml
+
+- name: Ensure Logstash is started and enabled on boot.
+  service:
+    name: logstash
+    state: started
+    enabled: true

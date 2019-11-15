@@ -1,0 +1,20 @@
+
+global_defs {
+	vrrp_version 3
+    enable_script_security
+}
+
+vrrp_instance VIP1 {
+
+	state BACKUP
+	priority 9
+	advert_int 1
+	interface bond0.1148
+	virtual_router_id 11
+
+	virtual_ipaddress
+	{
+		10.129.49.29
+	}
+
+}

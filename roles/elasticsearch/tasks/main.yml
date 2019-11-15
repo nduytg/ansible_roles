@@ -1,0 +1,97 @@
+---
+###### Setup Elastic Search ####
+- name: get all ip
+  debug: 
+    var: inventory_hostname
+
+- name: get all ip
+  debug: 
+    var: ansible_all_ipv4_addresses
+
+- name: get default ip
+  debug: 
+    var: ansible_default_ipv4.address
+
+- name: Add Java repo
+  apt_repository: 
+    repo: deb http://ppa.launchpad.net/linuxuprising/java/ubuntu bionic main
+    state: present
+
+- name: Add Java Key
+  apt_key:
+    id: 73C3DB2A
+    keyserver: hkp://keyserver.ubuntu.com:80
+    state: present
+
+- name: Install Java
+  apt: 
+    update_cache: yes
+    name: 
+      - default-jdk
+    state: present
+
+- name: Remove old Elastic Search packages
+  apt: 
+    name: 
+      - elasticsearch
+    purge: yes
+    state: absent
+
+- name: Setup tmp folders
+  file:
+    path: /opt/elasticsearch
+    state: directory
+
+- name: Download ElasticSearch (if version = 6.x)
+  get_url: 
+    url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{es_version}}.deb
+    dest: /opt/elasticsearch/elasticsearch-{{es_version}}.deb
+  when: es_version.split(".")[0] == "6"
+
+- name: Download ElasticSearch (if version = 7.x)
+  get_url: 
+    url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{es_version}}-amd64.deb
+    dest: /opt/elasticsearch/elasticsearch-{{es_version}}.deb
+  when: es_version.split(".")[0] == "7"
+
+- name: Install ElasticSearch
+  apt: 
+    deb: /opt/elasticsearch/elasticsearch-{{es_version}}.deb
+  notify:
+  - restart elasticsearch
+
+- name: Copy ES config
+  template: 
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch/elasticsearch.yml
+  notify:
+  - restart elasticsearch
+
+- name: Allow intra net access to ElasticSearch (9200)
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '9200'
+    jump: ACCEPT
+
+- name: Save iptables rules to /etc/sysconfig/iptables ElasticSearch (9200)
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 9200 -j ACCEPT'
+
+- name: Allow intra net access to ElasticSearch (9300)
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '9300'
+    jump: ACCEPT
+
+- name: Save iptables rules to /etc/sysconfig/iptables ElasticSearch (9300)
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 9300 -j ACCEPT'
+    

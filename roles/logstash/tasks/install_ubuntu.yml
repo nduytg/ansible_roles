@@ -1,0 +1,47 @@
+---
+- name: HTTPS APT transport for Elasticsearch repository.
+  apt:
+    name: apt-transport-https
+    state: present
+
+- name: Add Elasticsearch apt key.
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Setup tmp folders
+  file:
+    path: /opt/logstash
+    state: directory
+
+- name: Download logstash
+  get_url: 
+    url: https://artifacts.elastic.co/downloads/logstash/logstash-{{es_version}}.deb
+    dest: /opt/logstash/logstash-{{es_version}}.deb
+
+- name: Install logstash
+  apt: 
+    deb: /opt/logstash/logstash-{{es_version}}.deb
+  notify:
+  - restart logstash
+
+- name: Add Logstash user to adm group (Debian).
+  user:
+    name: logstash
+    group: logstash
+    groups: adm
+  notify: restart logstash
+
+- name: Allow intra net access to Logstash
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '{{ logstash_listen_port_beats }}'
+    jump: ACCEPT
+
+- name: Save iptables rules to /etc/sysconfig/iptables Logstash
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport "{{ logstash_listen_port_beats }}" -j ACCEPT'

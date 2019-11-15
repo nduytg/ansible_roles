@@ -1,0 +1,16 @@
+/var/nginx/logs/*.log
+/var/nginx/logs/http/*.log
+/var/nginx/logs/stream/*.log {
+        # rotate daily, keep one week
+        daily
+        rotate 7
+        dateext
+        missingok
+        compress
+        notifempty
+        sharedscripts
+
+        postrotate
+                [ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`
+        endscript
+}
