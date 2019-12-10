@@ -42,11 +42,9 @@ Supported Roles
 - [ ] Proxy/LB
   - [x] Nginx
   - [ ] NginxMonitor
-    - [ ] VTS Module
-    - [ ] Nginx Exporters
-      - [ ] 1..
-      - [ ] 2..
-- [ ] High Availability
+    - [x] VTS Module
+    - [x] Nginx VTS Exporter
+- [x] High Availability
   - [x] keepalived
 - [x] Service Discovery
   - [x] Consul
