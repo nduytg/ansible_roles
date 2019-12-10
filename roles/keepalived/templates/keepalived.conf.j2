@@ -1,20 +1,60 @@
+#jinja2:lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% if track_scripts is defined %}
+{% for key, value in track_scripts.items() %}
+vrrp_script {{ key }} {
+    script "{{ value.script }}"
+    interval {{ value.interval }}
+    weight {{ (100 // (groups['yourGroup1']|length)) + 1 }}
+    rise {{ value.rise }}
+    fall {{ value.fall }}
+}
+{% endfor %}
+{% endif %}
 
 global_defs {
-	vrrp_version 3
+    vrrp_version 3
     enable_script_security
 }
 
-vrrp_instance VIP1 {
+{% for key, value in VIPs.items() %}
+vrrp_instance {{ key }} {
+    {% if value.master == inventory_hostname %}
+    state MASTER
+    {% else %}
+    state BACKUP
+    {% endif %}
 
-	state BACKUP
-	priority 9
-	advert_int 1
-	interface bond0.1148
-	virtual_router_id 11
+    {% for k in value.internal_priority %}
+    {% if k == inventory_hostname %}
+    priority {{ (groups['yourGroup1']|length + 1 - value.internal_priority[k]) * 100 // (groups['yourGroup1']|length) }}
+    {% endif %}
+    {% endfor %}
 
-	virtual_ipaddress
-	{
-		10.129.49.29
-	}
+    advert_int 1
+    interface {{ value.interface }}
+    virtual_router_id {{ value.virtual_router_id }}
 
+    # Primary private IP used to communicate between peers
+    unicast_src_ip {{ inventory_hostname }}
+    unicast_peer {
+        {% for ip in value.vip_group %}
+        {% if ip|string != inventory_hostname %}
+        {{ ip }}
+        {% endif%}
+        {% endfor %}
+    }
+
+    virtual_ipaddress
+    {
+        {{ value.VIP }}
+    }
+
+    track_script {
+        {% for script in value.track_script %}
+        {{ script }}
+        {% endfor %}
+    }
 }
+{% endfor %}

@@ -1,0 +1,39 @@
+---
+# tasks file for keepalived
+- name: get default ip
+  debug: 
+    var: groups['thanos_new']
+
+- name: get default ip
+  debug: 
+    var: VIPs.items()
+
+- name: Setup keepalived folders
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ keepalived_build_dir }}"
+    - "{{ keepalived_conf_dir }}"
+
+- name: get default ip
+  debug: 
+    var: VIPs.VIP_1.internal_priority
+
+- name: get default ip
+  debug: 
+    var: VIPs.VIP_2.internal_priority
+
+- name: Copy keepalived config files
+  become: yes
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  with_items:
+    - { src: 'keepalived-new.conf.j2', dest: '{{ keepalived_conf_dir }}/keepalived.conf' }
+
+#- name: Clean setup folder
+#  file:
+#    path: "{{ keepalived_build_dir }}"
+#    state: absent

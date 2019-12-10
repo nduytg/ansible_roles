@@ -62,6 +62,8 @@
     mode: 0644
   with_items:
     - { src: 'keepalived.conf.j2', dest: '{{ keepalived_conf_dir }}/keepalived.conf' }
+  notify:
+    - restart keepalived
 
 - name: Copy keepalived check process scripts
   become: yes
@@ -70,7 +72,8 @@
     dest: "{{ item.dest }}"
     mode: 0755
   with_items:
-    - { src: 'checknginx.sh', dest: '{{ keepalived_conf_dir }}/checknginx.sh' }
+    - { src: 'check_nginx.sh', dest: '{{ keepalived_conf_dir }}/check_nginx.sh' }
+    - { src: 'check_k8s.sh', dest: '{{ keepalived_conf_dir }}/check_k8s.sh' }    
 
 - name: Copy systemd file
   copy:
@@ -79,7 +82,7 @@
   notify:
     - restart keepalived
 
-- name: Clean setup folder
-  file:
-    path: "{{ keepalived_build_dir }}"
-    state: absent
+#- name: Clean setup folder
+#  file:
+#    path: "{{ keepalived_build_dir }}"
+#    state: absent

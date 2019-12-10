@@ -6,12 +6,3 @@ keepalived_version: 2.0.19
 keepalived_build_dir: "/tmp/keepalived"
 keepalived_conf_dir: "/etc/keepalived"
 keepalived_sbin_dir: "/usr/local/sbin"
-
-vip_list:
-  vip:
-    id: 1
-    vrid: 11
-    name: "VIP1"
-    ip: "10.129.49.27/26"
-    interface: "bond0.1000@bond0"
-    
