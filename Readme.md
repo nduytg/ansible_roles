@@ -27,7 +27,7 @@ ansible-playbook -i hosts targets.yml
 
 # Information
 
-Supported Roles
+Supported Roles:
 
 - Prometheus Stack
   - [x] Prometheus
@@ -38,23 +38,27 @@ Supported Roles
   - [x] Thanos (Sidecar)
   - [x] Prometheus Exporters
     - [x] ElasitcSearch Exporter
-    - [x] ElasitcSearch Exporter (Docker)
-- [ ] Proxy/LB
+    - [x] ElasticSearch Exporter (Docker)
+- Proxy/LB
   - [x] Nginx
-  - [ ] NginxMonitor
+  - [x] NginxMonitor
     - [x] VTS Module
-    - [x] Nginx VTS Exporter
-- [x] High Availability
+    - [x] Nginx Exporters
+      - [x] Nginx VTS Exporters
+      - [ ] ...
+- High Availability
   - [x] keepalived
-- [x] Service Discovery
+- Service Discovery
   - [x] Consul
-- [ ] ELK Stack
+    - [x] Stand-alone
+    - [x] Cluster
+- ELK Stack
   - [x] ElasticSearch
   - [x] LogStack
   - [x] Kibana
   - [ ] Filebeat
   - [ ] MetricBeat
-- [x] Misc
+- Misc
   - [x] MySQL
   - [x] Docker
 
