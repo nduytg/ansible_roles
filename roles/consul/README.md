@@ -11,7 +11,16 @@ Don't have any requirements
 Role Variables
 --------------
 
-Only have one variable: **CONSUL_VERSION**
+Variables: 
+* **CONSUL_VERSION**: 1.6.1
+* **CONSUL_CLUSTER**: false/true
+
+Generate consul keygen for cluster
+
+```bash
+consul keygen
+pUqJrVyVRj5jsiYEkM/tFQYfWyJIv4s3XkvDwy7Cu5s=
+```
 
 Dependencies
 ------------
@@ -26,6 +35,8 @@ Edit in target.yml
     - hosts: someGroups
       roles:
          - consul
+      vars:
+        CONSUL_CLUSTER: false
 
 License
 -------
@@ -35,4 +46,4 @@ BSD
 Author Information
 ------------------
 
-nduytg@gmail.com
+duy.nguyen@shopee.com

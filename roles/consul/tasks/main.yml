@@ -63,12 +63,23 @@
   notify:
     - restart consul
 
-- name: Copy config files
+- name: Copy config for consul stand alone
   template:
-    src: consul.json.j2
+    src: consul_one_node.json.j2
     dest: /etc/consul.d/consul.json
     owner: consul
     group: consul
+  when: not CONSUL_CLUSTER | bool
+  notify:
+  - reload consul
+
+- name: Copy config for consul cluster
+  template:
+    src: consul_cluster.json.j2
+    dest: /etc/consul.d/consul.json
+    owner: consul
+    group: consul
+  when: CONSUL_CLUSTER | bool
   notify:
   - reload consul
 
@@ -87,6 +98,46 @@
     destination_port: '8300'
     jump: ACCEPT
 
+- name: Allow intra net access to Consul LAN Gossip TCP
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '8301'
+    jump: ACCEPT
+
+- name: Allow intra net access to Consul WAN Gossip TCP
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '8302'
+    jump: ACCEPT
+
+- name: Allow intra net access to Consul LAN Gossip UDP
+  iptables:
+    chain: INPUT
+    protocol: udp
+    source: 10.0.0.0/8
+    destination_port: '8301'
+    jump: ACCEPT
+
+- name: Allow intra net access to Consul WAN Gossip UDP
+  iptables:
+    chain: INPUT
+    protocol: udp
+    source: 10.0.0.0/8
+    destination_port: '8302'
+    jump: ACCEPT
+
+- name: Allow intra net access to Consul TCP
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '8300'
+    jump: ACCEPT
+
 - name: Allow intra net access to Consul HTTP API
   iptables:
     chain: INPUT
@@ -95,10 +146,66 @@
     destination_port: '8500'
     jump: ACCEPT
 
-- name: Allow intra net access to Consul DNS
+- name: Allow intra net access to Consul DNS TCP
   iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
     destination_port: '8600'
     jump: ACCEPT
+
+- name: Allow intra net access to Consul DNS UDP
+  iptables:
+    chain: INPUT
+    protocol: udp
+    source: 10.0.0.0/8
+    destination_port: '8600'
+    jump: ACCEPT
+
+- name: Save iptables rules port 8300 to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8300 -j ACCEPT'
+
+- name: Save iptables rules port 8301 TCP to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8301 -j ACCEPT'
+
+- name: Save iptables rules port 8302 TCP to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8302 -j ACCEPT'
+
+- name: Save iptables rules port 8500 to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8500 -j ACCEPT'
+
+- name: Save iptables rules port 8600 to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8600 -j ACCEPT'
+
+- name: Save iptables rules port 8301 UDP to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p udp --dport 8301 -j ACCEPT'
+
+- name: Save iptables rules port 8302 UDP to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p udp --dport 8302 -j ACCEPT'
+
+- name: Save iptables rules port 8600  UDP to /etc/sysconfig/iptables
+  lineinfile:
+    path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p udp --dport 8600 -j ACCEPT'

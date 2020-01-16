@@ -1,0 +1,28 @@
+{
+    "bootstrap_expect": 3,
+    "client_addr": "0.0.0.0",
+    "datacenter": "cloudcraft-dc",
+    "data_dir": "/var/consul",
+    "domain": "consul",
+    "enable_script_checks": true,
+    "dns_config": {
+        "enable_truncate": true,
+        "only_passing": true
+    },
+    "enable_syslog": true,
+    "encrypt": " {{ Generate by running: consul keygen }}",
+    "leave_on_terminate": true,
+    "log_level": "INFO",
+    "rejoin_after_leave": true,
+    "server": true,
+    "start_join": [
+        "10.1.22.104",
+        "10.1.22.105",
+        "10.1.22.106"
+    ],
+    "ui": true,
+    "telemetry": {
+    "prometheus_retention_time": "15s"
+    }
+
+}
