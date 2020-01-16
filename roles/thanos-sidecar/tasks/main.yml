@@ -80,12 +80,14 @@
     destination_port: '19090'
     jump: ACCEPT
 
-- name: Save iptables rules to /etc/sysconfig/iptables (19191)
+- name: Save iptables port 19191 rules to /etc/sysconfig/iptables
   lineinfile:
     path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 19191 -j ACCEPT'
 
-- name: Save iptables rules to /etc/sysconfig/iptables (19090)
+- name: Save iptables port 19090 rules to /etc/sysconfig/iptables
   lineinfile:
     path: /etc/sysconfig/iptables
-    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 19090 -j ACCEPT'   
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 19090 -j ACCEPT'

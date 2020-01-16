@@ -12,11 +12,11 @@ ExecStart=/usr/local/bin/thanos query \
     --query.replica-label replica \
     --http-address        0.0.0.0:19192 \
     {% for i in STORE_LIST %}
-        {% if not loop.last %}
-        --store {{ i }} \
-        {% else %}
-        --store {{ i }} 
-        {% endif %}
+    {% if not loop.last %}
+    --store {{ i }} \
+    {% else %}
+    --store {{ i }} 
+    {% endif %}
     {% endfor %}
     
 [Install]

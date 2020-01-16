@@ -57,7 +57,7 @@
       - { src: '/opt/thanos/thanos', dest: '/usr/local/bin/' }
   notify:
     - restart thanos-query
-    - restart thanos-sidecar
+    #- restart thanos-sidecar
 
 - name: Copy systemd file
   template:
@@ -82,12 +82,14 @@
     destination_port: '19092'
     jump: ACCEPT
 
-- name: Save iptables rules to /etc/sysconfig/iptables (19192)
+- name: Save iptables port 19192 rules to /etc/sysconfig/iptables
   lineinfile:
     path: /etc/sysconfig/iptables
+    insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 19192 -j ACCEPT'
 
-- name: Save iptables rules to /etc/sysconfig/iptables (19092)
+- name: Save iptables port 19092 rules to /etc/sysconfig/iptables
   lineinfile:
     path: /etc/sysconfig/iptables
-    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 19092 -j ACCEPT'    
+    insertafter: '^# END SA MANAGED BLOCK '
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 19092 -j ACCEPT'

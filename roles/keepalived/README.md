@@ -1,7 +1,7 @@
 Ansible Keepalived
 =========
 
-I have looked around at available keepalived roles on Github but none meet my expectation, so I create my own role here. 
+I have looked around at available keepalived roles on Github but none meet my expectation, so I create my own role here.
 
 `Priority`, `Weight` will be automatically caculated based on `number of nodes, VIPs` and `internal_priority` settings. You only need to change all your variables in `vars/main.yml`. Try it and have fun^^.
 
