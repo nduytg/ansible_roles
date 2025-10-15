@@ -1,40 +1,36 @@
-Pushgateway
-=========
+# Pushgateway role
 
-Setup Pushgateway service
+## Overview
+Installs the Prometheus Pushgateway binary, configures it as a systemd service,
+and opens the firewall so job exporters can push metrics. This role is intended
+for environments where ephemeral jobs need to expose Prometheus metrics.
 
-Requirements
-------------
+## Requirements
+- Ansible 2.10 or newer.
+- RHEL/CentOS compatible hosts with `systemd` and iptables-services.
 
-None
+## Role Variables
+The role exposes a single variable that controls which Pushgateway release is
+downloaded. `defaults/main.yml` provides the baseline value and `vars/main.yml`
+pins the version used in the sample inventory.
 
-Role Variables
---------------
+| Variable | Default | Description |
+| --- | --- | --- |
+| `PUSHGATEWAY_VERSION` | `0.9.0` (defaults) / `0.9.1` (vars) | Pushgateway release to install. |
 
-3 variables for this role:
+## Dependencies
+None.
 
-* PUSHGATEWAY_VERSION: {{ version }}
+## Example Playbook
+```yaml
+- hosts: pushgateway
+  become: true
+  roles:
+    - role: pushgateway
+```
 
-Dependencies
-------------
-
-None
-
-Example Playbook
-----------------
-
-Edit in target.yml
-
-    - hosts: someGroups
-      roles:
-         - pushgateway
-
-License
--------
-
+## License
 BSD
 
-Author Information
-------------------
-
+## Author Information
 nduytg@gmail.com

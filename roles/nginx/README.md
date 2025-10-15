@@ -1,49 +1,55 @@
-Nginx Role
-=========
+# Nginx role
 
-Setup nginx on physical servers
+## Overview
+Compiles and installs the Nginx web server from source with a curated set of
+modules, lays out configuration directories, and deploys service units. The role
+is intended for scenarios where a specific Nginx version or build flags are
+required beyond what distribution packages provide.
 
-Requirements
-------------
+## Requirements
+- Ansible 2.10 or newer.
+- RHEL/CentOS compatible hosts with compiler toolchains installed.
+- Internet access to download the Nginx source tarball and optional modules.
 
-None
+## Role Variables
+Defaults can be overridden via inventory as needed. Refer to
+`defaults/main.yml` for the authoritative list.
 
-Role Variables
---------------
+| Variable | Default | Description |
+| --- | --- | --- |
+| `nginx_version` | `1.16.1` | Nginx source version to compile. |
+| `nginx_user` | `nginx` | User account running the nginx process. |
+| `nginx_group` | `nginx` | Group owning the nginx process. |
+| `nginx_build_dir` | `/tmp/nginx` | Working directory used during compilation. |
+| `nginx_conf_dir` | `/etc/nginx` | Directory for configuration files. |
+| `nginx_var_dir` | `/var/nginx` | Base directory for runtime data. |
+| `nginx_log_dir` | `/var/nginx/logs` | Base logging directory. |
+| `nginx_http_log_dir` | `/var/nginx/logs/http` | Directory for HTTP access logs. |
+| `nginx_stream_log_dir` | `/var/nginx/logs/stream` | Directory for stream access logs. |
+| `nginx_bin_path` | `/usr/local/bin/nginx` | Path to the compiled nginx binary. |
+| `nginx_conf_path` | `/etc/nginx/nginx.conf` | Location of the main nginx configuration file. |
+| `nginx_upstream_dir` | `/etc/nginx/conf.d` | Directory for upstream/server snippets. |
+| `nginx_custom_modules` | see defaults | Extra `./configure` flags appended when building nginx. |
+| `nginx_modules` | `{ geoip: false }` | Toggle installation of optional modules. |
 
-List of variables:
-* nginx_version: 1.16.1
-* nginx_user: "nginx"
-* nginx_group: "nginx"
-* nginx_build_dir: "/tmp/nginx"
-* nginx_conf_dir: "/etc/nginx"
-* nginx_var_dir: "/var/nginx"
-* nginx_log_dir: "/var/nginx/logs"
-* nginx_http_log_dir: "/var/nginx/logs/http"
-* nginx_stream_log_dir: "/var/nginx/logs/stream"
-* nginx_bin_path: "/usr/local/bin/nginx"
-* nginx_conf_path: "/etc/nginx/nginx.conf"
-* nginx_upstream_dir: "/etc/nginx/conf.d"
-* nginx_custom_modules: List of add-on modules for Nginx
+Update the templates under `templates/` to match your site configuration,
+upstreams, and TLS settings.
 
-Dependencies
-------------
+## Dependencies
+None.
 
-None
+## Example Playbook
+```yaml
+- hosts: web
+  become: true
+  vars:
+    nginx_version: 1.21.6
+  roles:
+    - role: nginx
+```
 
-Example Playbook
-----------------
-
-    - hosts: servers
-      roles:
-         - nginx
-
-License
--------
-
+## License
 BSD
 
-Author Information
-------------------
-
+## Author Information
 nduytg@gmail.com

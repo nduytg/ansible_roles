@@ -1,42 +1,39 @@
-Thanos sidecar
-=========
+# Thanos Sidecar role
 
-Setup Thanos sidecar on Prometheus servers
+## Overview
+Installs the Thanos sidecar binary next to Prometheus, configures the systemd
+service, and exposes the gRPC/HTTP ports used by Thanos Query. The role assumes
+Prometheus is already deployed and exporting data locally.
 
-This role will not setup Prometheus, if you want to setup Prometheus, use the Prometheus role
+## Requirements
+- Ansible 2.10 or newer.
+- RHEL/CentOS compatible hosts with `systemd`.
+- A running Prometheus instance whose data directory will be read by the sidecar.
 
-Requirements
-------------
+## Role Variables
+Defaults live in `defaults/main.yml` with example overrides in `vars/main.yml`.
 
-Prometheus
+| Variable | Default | Description |
+| --- | --- | --- |
+| `THANOS_VERSION` | `0.6.0` (defaults) / `0.8.1` (vars) | Thanos release installed on the host. |
 
-Role Variables
---------------
+Adjust the templates to reference your object storage credentials and Prometheus
+data directory if they differ from the defaults.
 
-Variables for this role:
+## Dependencies
+None.
 
-* **THANOS_VERSION**: "0.6.1"
+## Example Playbook
+```yaml
+- hosts: prometheus
+  become: true
+  roles:
+    - role: prometheus
+    - role: thanos-sidecar
+```
 
-Dependencies
-------------
-
-None
-
-Example Playbook
-----------------
-
-Edit in target.yml
-
-    - hosts: someGroups
-      roles:
-         - thanos-sidecar
-
-License
--------
-
+## License
 BSD
 
-Author Information
-------------------
-
+## Author Information
 nduytg@gmail.com

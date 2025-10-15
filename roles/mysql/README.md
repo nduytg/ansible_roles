@@ -1,42 +1,33 @@
-MySQL Role
-=========
+# MySQL role
 
-Install MySQL on Linux
+## Overview
+Installs the distribution MySQL server packages on Debian and Ubuntu hosts,
+starts the service, and opens the firewall so the instance can be reached from
+your internal network.
 
-Supported OS:
+## Requirements
+- Ansible 2.10 or newer.
+- Debian or Ubuntu hosts with access to the distribution repositories.
+- iptables-services installed when persisting firewall rules via
+  `/etc/sysconfig/iptables`.
 
-* [x] Debian/Ubuntu
+## Role Variables
+This role does not define any defaults. Use group or host variables if you need
+to adjust package names, firewall networks, or service options.
 
-Requirements
-------------
+## Dependencies
+None.
 
-Don't have any requirements
+## Example Playbook
+```yaml
+- hosts: mysql
+  become: true
+  roles:
+    - role: mysql
+```
 
-Role Variables
---------------
-
-Don't have any variables
-
-Dependencies
-------------
-
-None
-
-Example Playbook
-----------------
-
-Edit in target.yml
-
-    - hosts: someGroups
-      roles:
-         - mysql
-
-License
--------
-
+## License
 BSD
 
-Author Information
-------------------
-
+## Author Information
 nduytg@gmail.com

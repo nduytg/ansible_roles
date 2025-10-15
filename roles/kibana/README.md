@@ -1,38 +1,50 @@
-Role Name
-=========
+# Kibana role
 
-A brief description of the role goes here.
+## Overview
+Installs Kibana from the official Elastic package repositories, deploys the
+primary configuration file, and ensures the service is running. The defaults
+provide a single instance listening on all interfaces with anonymous access to a
+local Elasticsearch node.
 
-Requirements
-------------
+## Requirements
+- Ansible 2.10 or newer.
+- Debian/Ubuntu or RHEL/CentOS hosts with access to the Elastic repositories
+  (adjust the tasks if using a different distribution).
+- Elasticsearch reachable at the URL specified by `kibana_elasticsearch_url`.
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+## Role Variables
+Defaults reside in `defaults/main.yml` and can be overridden in your inventory.
 
-Role Variables
---------------
+| Variable | Default | Description |
+| --- | --- | --- |
+| `kibana_version` | `7.4.0` | Kibana package version to install. |
+| `kibana_package` | `kibana` | Name of the Kibana package. |
+| `kibana_package_state` | `present` | State passed to the package module. |
+| `kibana_service_state` | `started` | Desired service state. |
+| `kibana_service_enabled` | `true` | Start the service on boot. |
+| `kibana_config_template` | `kibana.yml.j2` | Template used to render the Kibana config. |
+| `kibana_config_file_path` | `/etc/kibana/kibana.yml` | Destination path for the rendered config. |
+| `kibana_server_port` | `5601` | HTTP port Kibana listens on. |
+| `kibana_server_host` | `0.0.0.0` | Bind address for Kibana. |
+| `kibana_elasticsearch_url` | `http://localhost:9200` | URL of the Elasticsearch cluster. |
+| `kibana_elasticsearch_username` | `""` | Optional username for Elasticsearch authentication. |
+| `kibana_elasticsearch_password` | `""` | Optional password for Elasticsearch authentication. |
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+## Dependencies
+None.
 
-Dependencies
-------------
+## Example Playbook
+```yaml
+- hosts: kibana
+  become: true
+  vars:
+    kibana_elasticsearch_url: https://es.internal.example.com:9200
+  roles:
+    - role: kibana
+```
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
-
-Example Playbook
-----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
-License
--------
-
+## License
 BSD
 
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+## Author Information
+nduytg@gmail.com
