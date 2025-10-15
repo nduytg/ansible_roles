@@ -1,7 +1,7 @@
 ---
 - name: restart pushgateway
   become: true
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: true
     name: pushgateway
     state: restarted
@@ -9,6 +9,6 @@
 
 - name: reload pushgateway
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: pushgateway
     state: reloaded

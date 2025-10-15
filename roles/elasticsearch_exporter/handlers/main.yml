@@ -2,7 +2,7 @@
 - name: restart elasticsearch exporter
   listen:
     - restart elasticsearch exporter
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: yes
     name: elasticsearch_exporter
     state: restarted

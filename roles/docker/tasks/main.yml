@@ -1,29 +1,33 @@
 ---
 # Setup docker engine
-- name: get all ip
-  debug: 
+- name: Display all detected IP addresses
+  ansible.builtin.debug:
     var: ansible_all_ipv4_addresses
 
-- name: get default ip
-  debug: 
-    msg: |
-      - Default IP address: {{ ansible_default_ipv4.address }}
-      - Remote host OS: {{ ansible_os_family }}
+- name: Display host facts summary
+  ansible.builtin.debug:
+    msg: |-
+      Default IP address: {{ ansible_default_ipv4.address }}
+      Remote host OS: {{ ansible_os_family }}
 
-- include_tasks: setup-RedHat.yml
+- name: Include Red Hat specific setup
+  ansible.builtin.include_tasks: setup-RedHat.yml
   when: ansible_os_family == 'RedHat'
 
-- include_tasks: setup-Debian.yml
+- name: Include Debian specific setup
+  ansible.builtin.include_tasks: setup-Debian.yml
   when: ansible_os_family == 'Debian'
 
-- name: Install Docker.
-  package:
+- name: Install Docker engine
+  ansible.builtin.package:
     name: "{{ docker_package }}"
     state: present
   notify: restart docker
 
-- include_tasks: docker-compose.yml
+- name: Include docker-compose installation
+  ansible.builtin.include_tasks: docker-compose.yml
   when: docker_install_compose | bool
 
-- include_tasks: docker-users.yml
+- name: Include Docker user configuration
+  ansible.builtin.include_tasks: docker-users.yml
   when: docker_users | length > 0

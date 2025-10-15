@@ -1,25 +1,25 @@
 ---
 # Setup Grafana
 - name: get all ip
-  debug:
+  ansible.builtin.debug:
     var: ansible_all_ipv4_addresses
 
 - name: get default ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_default_ipv4.address
 
 - name: Add Grafana repo
-  apt_repository: 
+  ansible.builtin.apt_repository: 
     repo: deb https://packages.grafana.com/oss/deb stable main
     state: present
 
 - name: Add Grafana Key
-  apt_key:
+  ansible.builtin.apt_key:
     url: https://packages.grafana.com/gpg.key
     state: present
 
 - name: Install Grafana
-  apt: 
+  ansible.builtin.apt: 
     update_cache: yes
     name: 
       - grafana
@@ -27,19 +27,19 @@
     state: present
 
 - name: Copy grafana.ini file
-  template:
+  ansible.builtin.template:
     src: grafana.ini.j2
     dest: /etc/grafana/grafana.ini
 
 - name: Start Grafana
-  systemd:
+  ansible.builtin.systemd:
     name: grafana-server
     state: started
     daemon_reload: yes
     enabled: yes
 
 - name: Allow intra net access to grafana
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -47,7 +47,7 @@
     jump: ACCEPT
 
 - name: Save iptables rules to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 3000 -j ACCEPT'
     

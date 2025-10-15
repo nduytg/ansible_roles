@@ -1,12 +1,12 @@
 ---
 # tasks file for nginx
 - name: get default ip
-  debug: 
+  ansible.builtin.debug:
     var: ansible_default_ipv4.address
 
 - name: Installing NGINX Dependencies
   become: yes
-  apt:
+  ansible.builtin.apt:
     name: ['libssl-dev', 
             'zlib1g-dev', 
             'libpcre3', 
@@ -16,14 +16,14 @@
     - install
 
 - name: Add group nginx
-  group: 
+  ansible.builtin.group:
     name: nginx
     state: present
   tags: 
     - install
 
 - name: Add user nginx
-  user: 
+  ansible.builtin.user:
     name: nginx
     group: nginx
     state: present
@@ -33,12 +33,12 @@
     - install
 
 - name: Setup nginx folders
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: nginx
     group: nginx
-  with_items:
+  loop:
     - "{{ nginx_build_dir }}"
     - "{{ nginx_conf_dir }}"
     - "{{ nginx_upstream_dir }}"
@@ -54,7 +54,7 @@
     - install
 
 - name: Download nginx tar ball
-  get_url: 
+  ansible.builtin.get_url:
     url: http://nginx.org/download/nginx-{{nginx_version}}.tar.gz
     dest: "{{nginx_build_dir}}/nginx-{{nginx_version}}.tar.gz"
   tags: 
@@ -62,7 +62,7 @@
     - upgrade
 
 - name: Unarchive nginx tar ball
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{nginx_build_dir}}/nginx-{{nginx_version}}.tar.gz"
     dest: "{{nginx_build_dir}}/"
     remote_src: yes
@@ -72,18 +72,20 @@
     - upgrade
 
 - name: Git clone nginx VTS module for monitoring
-  git:
+  ansible.builtin.git:
     repo: 'git://github.com/vozlt/nginx-module-vts.git'
     dest: "{{nginx_build_dir}}/nginx-module-vts/"
     clone: yes
 
 - name: Configuring NGINX source with custom modules
-  command: "./configure \
-            --user={{ nginx_user }}
-            --group={{ nginx_group }}
-            --sbin-path={{nginx_bin_path}} \
-            --conf-path={{ nginx_conf_dir }}/nginx.conf \
-            {{ nginx_custom_modules }}"
+  ansible.builtin.command:
+    cmd: >-
+      ./configure \
+      --user={{ nginx_user }}
+      --group={{ nginx_group }}
+      --sbin-path={{ nginx_bin_path }} \
+      --conf-path={{ nginx_conf_dir }}/nginx.conf \
+      {{ nginx_custom_modules }}
   args:
     chdir: "{{ nginx_build_dir }}"
   register: nginx_configure
@@ -93,7 +95,7 @@
 
 - name: Compile NGINX
   become: yes
-  shell: make -j32 && make install
+  ansible.builtin.shell: make -j32 && make install
   args:
     chdir: "{{ nginx_build_dir }}"
   when: nginx_configure is changed
@@ -105,13 +107,13 @@
 
 - name: Copy Nginx config files
   become: yes
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: "{{ nginx_user }}"
     group: "{{ nginx_user }}"
     mode: 0644
-  with_items:
+  loop:
     - { src: 'nginx.conf.j2', dest: '{{ nginx_conf_dir }}/nginx.conf' }
     - { src: 'proxy.conf.j2', dest: '{{ nginx_conf_dir }}/proxy.conf' }
     - { src: 'default.conf.j2', dest: '{{ nginx_upstream_dir }}/default.conf' }
@@ -122,20 +124,20 @@
 
 - name: Setup logrotate for nginx
   become: yes
-  template:
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     owner: root
     group: root
     mode: 0644
-  with_items:
+  loop:
     - { src: 'logrotate_nginx.j2', dest: '/etc/logrotate.d/nginx' }   
   tags: 
     - install
     - configure
 
 - name: Copy systemd file
-  template:
+  ansible.builtin.template:
     src: nginx.service.j2
     dest: /etc/systemd/system/nginx.service
   notify:
@@ -144,7 +146,7 @@
     - install
 
 - name: Allow intra net access to nginx
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -154,13 +156,13 @@
     - install
 
 - name: Save iptables rules to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 80 -j ACCEPT'
 
 - name: Allow intra net access to nginx
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -170,7 +172,7 @@
     - install
 
 - name: Save iptables rules to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8080 -j ACCEPT'
@@ -178,7 +180,7 @@
     - install
 
 # - name: Clean setup folder
-#   file:
+#   ansible.builtin.file:
 #     path: "{{ nginx_build_dir }}"
 #     state: absent
 #   tags: 

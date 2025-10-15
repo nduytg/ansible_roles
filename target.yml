@@ -1,28 +1,30 @@
 ---
 - name: Setup Monitoring Services
   hosts: prometheus_group
-  become: yes
-  become_user: root
+  become: true
+  gather_facts: false
+  collections:
+    - ansible.builtin
 
-  # Ensure Python is installed on remote node
-  gather_facts: False
   pre_tasks:
-   - name: Install python for Ansible
-     raw: test -e /usr/bin/python || test -e /usr/bin/python3 || (apt -y update && apt install -y python)
-     changed_when: False
-   - setup: # aka gather_facts
+    - name: Install Python for Ansible
+      ansible.builtin.raw: test -e /usr/bin/python || test -e /usr/bin/python3 || (apt -y update && apt install -y python)
+      changed_when: false
+    - name: Gather facts
+      ansible.builtin.setup:
+        gather_subset: all
 
   roles:
-      - mysql
-     #- prometheus
-     #- alertmanager
-     #- pushgateway
-     #- thanos-sidecar
-     #- thanos-query
-     #- autosyncmesos
-     #- consul
-     #- grafana
-     #- vsftpd
-     #- iptables-persistent
-     #- elasticsearch_exporter
-     #- m3-single-node
+    - mysql
+    # - prometheus
+    # - alertmanager
+    # - pushgateway
+    # - thanos-sidecar
+    # - thanos-query
+    # - autosyncmesos
+    # - consul
+    # - grafana
+    # - vsftpd
+    # - iptables-persistent
+    # - elasticsearch_exporter
+    # - m3-single-node

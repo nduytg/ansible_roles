@@ -1,12 +1,15 @@
 ---
-- name: Include OS Specific setup tasks
-  include: install_ubuntu.yml
+- name: Include OS specific setup tasks
+  ansible.builtin.import_tasks: install_ubuntu.yml
 
-- include: setup_config.yml
-- include: install_plugins.yml
+- name: Configure Logstash
+  ansible.builtin.import_tasks: setup_config.yml
 
-- name: Ensure Logstash is started and enabled on boot.
-  service:
+- name: Install Logstash plugins
+  ansible.builtin.import_tasks: install_plugins.yml
+
+- name: Ensure Logstash is started and enabled on boot
+  ansible.builtin.service:
     name: logstash
     state: started
     enabled: true
