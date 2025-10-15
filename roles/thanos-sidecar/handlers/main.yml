@@ -3,7 +3,7 @@
   listen:
     - restart thanos-sidecar
   become: true
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: true
     name: thanos-sidecar
     state: restarted
@@ -13,6 +13,6 @@
   listen:
     - reload thanos-sidecar
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: thanos-sidecar
     state: reloaded

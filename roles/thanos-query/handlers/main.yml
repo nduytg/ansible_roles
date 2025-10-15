@@ -3,7 +3,7 @@
   listen:
     - restart thanos-query
   become: true
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: true
     name: thanos-query
     state: restarted
@@ -13,6 +13,6 @@
   listen:
     - reload thanos-query
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: thanos-query
     state: reloaded

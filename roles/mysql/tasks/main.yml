@@ -1,28 +1,28 @@
 ---
 # tasks file for mysql
 - name: get all ip
-  debug:
+  ansible.builtin.debug:
     var: ansible_all_ipv4_addresses
 
 - name: get default ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_default_ipv4.address
 
 - name: Install MySQL
-  apt: 
+  ansible.builtin.apt: 
     update_cache: yes
     name: 
       - mysql-server
 
 - name: Start MySQL
-  systemd:
+  ansible.builtin.systemd:
     name: mysql
     state: started
     daemon_reload: yes
     enabled: yes
 
 - name: Allow intra net access to mysql
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -30,7 +30,7 @@
     jump: ACCEPT
 
 - name: Save iptables rules to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 3306 -j ACCEPT'
     

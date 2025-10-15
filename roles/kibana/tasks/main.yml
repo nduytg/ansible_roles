@@ -1,43 +1,43 @@
 ---
 - name: get default ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_default_ipv4.address
 
 - name: Ensure dependency is installed (Ubuntu).
-  apt: 
+  ansible.builtin.apt: 
     name: apt-transport-https 
     state: present
 
 - name: Add ElasticSearch apt key.
-  apt_key:
+  ansible.builtin.apt_key:
     url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
     state: present
 
 - name: Setup tmp folders
-  file:
+  ansible.builtin.file:
     path: /opt/kibana
     state: directory
 
 - name: Download Kibana (if version = 6.x)
-  get_url: 
+  ansible.builtin.get_url: 
     url: https://artifacts.elastic.co/downloads/kibana/kibana-{{es_version}}.deb
     dest: /opt/kibana/kibana-{{es_version}}.deb
   when: es_version.split(".")[0] == "6"
 
 - name: Download Kibana (if version = 7.x)
-  get_url: 
+  ansible.builtin.get_url: 
     url: https://artifacts.elastic.co/downloads/kibana/kibana-{{es_version}}-amd64.deb
     dest: /opt/kibana/kibana-{{es_version}}.deb
   when: es_version.split(".")[0] == "7"
 
 - name: Install kibana
-  apt: 
+  ansible.builtin.apt: 
     deb: /opt/kibana/kibana-{{es_version}}.deb
   notify:
   - restart kibana
 
 - name: Copy Kibana configuration.
-  template:
+  ansible.builtin.template:
     src: "{{ kibana_config_template }}"
     dest: "{{ kibana_config_file_path }}"
     owner: root
@@ -46,7 +46,7 @@
   notify: restart kibana
 
 - name: Allow intra net access to Kibana
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -54,7 +54,7 @@
     jump: ACCEPT
 
 - name: Save iptables rules to /etc/sysconfig/iptables Logstash
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport "{{ kibana_server_port }}" -j ACCEPT'

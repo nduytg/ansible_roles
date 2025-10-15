@@ -1,13 +1,13 @@
 ---
 # handlers file for keepalived
 - name: restart keepalived
-  systemd:
+  ansible.builtin.systemd:
     name: keepalived
     daemon_reload: true
     state: restarted
     enabled: yes
     
 - name: reload keepalived
-  systemd:
+  ansible.builtin.systemd:
     name: keepalived
     state: reloaded

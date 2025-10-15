@@ -1,98 +1,98 @@
 ---
 # tasks file for alertmanager
-  #- name: get all ip
-  #  debug: 
-  #    var: ansible_facts
-  - name: get all ip
-    debug: 
-      var: ansible_all_ipv4_addresses
+#- name: get all ip
+#  ansible.builtin.debug:
+#    var: ansible_facts
+- name: get all ip
+  ansible.builtin.debug:
+    var: ansible_all_ipv4_addresses
 
-  - name: get default ip
-    debug: 
-      var: ansible_default_ipv4.address
+- name: get default ip
+  ansible.builtin.debug:
+    var: ansible_default_ipv4.address
 
-  - name: Add group alertmanager
-    group: 
-      name: alertmanager
-      state: present
+- name: Add group alertmanager
+  ansible.builtin.group:
+    name: alertmanager
+    state: present
 
-  - name: Add user alertmanager
-    user: 
-      name: alertmanager
-      group: alertmanager
-      state: present
-      shell: /usr/sbin/nologin
-      create_home: false
+- name: Add user alertmanager
+  ansible.builtin.user:
+    name: alertmanager
+    group: alertmanager
+    state: present
+    shell: /usr/sbin/nologin
+    create_home: false
 
-  - name: Setup alertmanager folders
-    file:
-      path: "{{ item }}"
-      state: directory
-      owner: alertmanager
-      group: alertmanager
-    with_items:
-      - /opt/alertmanager
-      - /var/alertmanager
-      - /etc/alertmanager
-      - /etc/alertmanager/noti_templates
+- name: Setup alertmanager folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+  loop:
+    - /opt/alertmanager
+    - /var/alertmanager
+    - /etc/alertmanager
+    - /etc/alertmanager/noti_templates
 
-  - name: Download alertmanager tar ball
-    get_url: 
-      url: https://github.com/prometheus/alertmanager/releases/download/v{{ALERTMANAGER_VERSION}}/alertmanager-{{ALERTMANAGER_VERSION}}.linux-amd64.tar.gz
-      dest: /opt/alertmanager/alertmanager-{{ALERTMANAGER_VERSION}}.linux-amd64.tar.gz
+- name: Download alertmanager tar ball
+  ansible.builtin.get_url:
+    url: https://github.com/prometheus/alertmanager/releases/download/v{{ ALERTMANAGER_VERSION }}/alertmanager-{{ ALERTMANAGER_VERSION }}.linux-amd64.tar.gz
+    dest: /opt/alertmanager/alertmanager-{{ ALERTMANAGER_VERSION }}.linux-amd64.tar.gz
 
-  - name: Unarchive alertmanager tar ball
-    unarchive:
-      src: /opt/alertmanager/alertmanager-{{ALERTMANAGER_VERSION}}.linux-amd64.tar.gz
-      dest: /opt/alertmanager/
-      remote_src: yes
-      extra_opts: "--strip-components=1"
+- name: Unarchive alertmanager tar ball
+  ansible.builtin.unarchive:
+    src: /opt/alertmanager/alertmanager-{{ ALERTMANAGER_VERSION }}.linux-amd64.tar.gz
+    dest: /opt/alertmanager/
+    remote_src: true
+    extra_opts: "--strip-components=1"
 
-  - name: Copy binary files
-    copy:
-      src: "{{ item.src }}"
-      dest: "{{ item.dest }}"
-      remote_src: yes
-      owner: alertmanager
-      group: alertmanager
-      mode: '0755'
-    with_items:
-        - { src: '/opt/alertmanager/alertmanager', dest: '/usr/local/bin/' }
-    notify:
+- name: Copy binary files
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: true
+    owner: alertmanager
+    group: alertmanager
+    mode: '0755'
+  loop:
+    - { src: '/opt/alertmanager/alertmanager', dest: '/usr/local/bin/' }
+  notify:
     - restart alertmanager
 
-  - name: Copy config files
-    template:
-      src: alertmanager.yml.j2
-      dest: /etc/alertmanager/alertmanager.yml
-      owner: alertmanager
-      group: alertmanager
-    notify:
+- name: Copy config files
+  ansible.builtin.template:
+    src: alertmanager.yml.j2
+    dest: /etc/alertmanager/alertmanager.yml
+    owner: alertmanager
+    group: alertmanager
+  notify:
     - reload alertmanager
 
-  - name: Copy notification template
-    copy:
-      src: notifications.tmpl
-      dest: /etc/alertmanager/noti_templates/notifications.tmpl
-    notify:
-      - reload alertmanager
+- name: Copy notification template
+  ansible.builtin.copy:
+    src: notifications.tmpl
+    dest: /etc/alertmanager/noti_templates/notifications.tmpl
+  notify:
+    - reload alertmanager
 
-  - name: Copy systemd file
-    copy:
-      src: alertmanager.service
-      dest: /etc/systemd/system/alertmanager.service
-    notify:
-      - restart alertmanager
+- name: Copy systemd file
+  ansible.builtin.copy:
+    src: alertmanager.service
+    dest: /etc/systemd/system/alertmanager.service
+  notify:
+    - restart alertmanager
 
-  - name: Allow intra net access to alertmanager
-    iptables:
-     chain: INPUT
-     protocol: tcp
-     source: 10.0.0.0/8
-     destination_port: '9093'
-     jump: ACCEPT
+- name: Allow intra net access to alertmanager
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    source: 10.0.0.0/8
+    destination_port: '9093'
+    jump: ACCEPT
 
-  - name: Save iptables rules to /etc/sysconfig/iptables
-    lineinfile:
-      path: /etc/sysconfig/iptables
-      line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 9093 -j ACCEPT'
+- name: Save iptables rules to /etc/sysconfig/iptables
+  ansible.builtin.lineinfile:
+    path: /etc/sysconfig/iptables
+    line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 9093 -j ACCEPT'

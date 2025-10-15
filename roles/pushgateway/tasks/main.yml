@@ -1,20 +1,20 @@
 ---
 ###### Setup pushgateway Server####
 - name: get all ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_all_ipv4_addresses
 
 - name: get default ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_default_ipv4.address
 
 - name: Add group pushgateway
-  group: 
+  ansible.builtin.group: 
     name: pushgateway
     state: present
 
 - name: Add user pushgateway
-  user: 
+  ansible.builtin.user: 
     name: pushgateway
     group: pushgateway
     state: present
@@ -22,50 +22,50 @@
     create_home: false
 
 - name: Setup pushgateway folders
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: pushgateway
     group: pushgateway
-  with_items:
+  loop:
     - /opt/pushgateway
     - /var/pushgateway
     - /etc/pushgateway
 
 - name: Download pushgateway tar ball
-  get_url: 
+  ansible.builtin.get_url: 
     url: https://github.com/prometheus/pushgateway/releases/download/v{{PUSHGATEWAY_VERSION}}/pushgateway-{{PUSHGATEWAY_VERSION}}.linux-amd64.tar.gz
     dest: /opt/pushgateway/pushgateway-{{PUSHGATEWAY_VERSION}}.linux-amd64.tar.gz
 
 - name: Unarchive pushgateway tar ball
-  unarchive:
+  ansible.builtin.unarchive:
     src: /opt/pushgateway/pushgateway-{{PUSHGATEWAY_VERSION}}.linux-amd64.tar.gz
     dest: /opt/pushgateway/
     remote_src: yes
     extra_opts: "--strip-components=1"
 
 - name: Copy binary files
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     remote_src: yes
     owner: pushgateway
     group: pushgateway
     mode: '0755'
-  with_items:
-      - { src: '/opt/pushgateway/pushgateway', dest: '/usr/local/bin/' }
+  loop:
+    - { src: '/opt/pushgateway/pushgateway', dest: '/usr/local/bin/' }
   notify:
     - restart pushgateway
 
 - name: Copy systemd file
-  copy:
+  ansible.builtin.copy:
     src: pushgateway.service
     dest: /etc/systemd/system/pushgateway.service
   notify:
     - restart pushgateway
 
 - name: Allow intra net access to pushgateway
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -73,7 +73,7 @@
     jump: ACCEPT
 
 - name: Save iptables rules to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 9091 -j ACCEPT'
     
