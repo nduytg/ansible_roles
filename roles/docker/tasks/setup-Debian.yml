@@ -1,29 +1,29 @@
 ---
-- name: Remove old versions of Docker.
-  apt:
+- name: Remove old versions of Docker
+  ansible.builtin.apt:
     name:
       - docker
       - docker-engine
     state: absent
 
-- name: Ensure dependencies are installed.
-  apt:
-    update_cache: yes
+- name: Ensure dependencies are installed
+  ansible.builtin.apt:
+    update_cache: true
     name:
       - apt-transport-https
       - ca-certificates
     state: present
 
-- name: Add Docker apt key.
-  apt_key:
+- name: Add Docker apt key
+  ansible.builtin.apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
     id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
     state: present
   register: add_repository_key
   ignore_errors: "{{ docker_apt_ignore_key_error }}"
 
-- name: Add Docker repository.
-  apt_repository:
+- name: Add Docker repository
+  ansible.builtin.apt_repository:
     repo: "{{ docker_apt_repository }}"
     state: present
     update_cache: true

@@ -1,39 +1,39 @@
 ---
-- name: HTTPS APT transport for Elasticsearch repository.
-  apt:
+- name: HTTPS APT transport for Elasticsearch repository
+  ansible.builtin.apt:
     name: apt-transport-https
     state: present
 
-- name: Add Elasticsearch apt key.
-  apt_key:
+- name: Add Elasticsearch apt key
+  ansible.builtin.apt_key:
     url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
     state: present
 
 - name: Setup tmp folders
-  file:
+  ansible.builtin.file:
     path: /opt/logstash
     state: directory
 
 - name: Download logstash
-  get_url: 
-    url: https://artifacts.elastic.co/downloads/logstash/logstash-{{es_version}}.deb
-    dest: /opt/logstash/logstash-{{es_version}}.deb
+  ansible.builtin.get_url:
+    url: https://artifacts.elastic.co/downloads/logstash/logstash-{{ es_version }}.deb
+    dest: /opt/logstash/logstash-{{ es_version }}.deb
 
 - name: Install logstash
-  apt: 
-    deb: /opt/logstash/logstash-{{es_version}}.deb
+  ansible.builtin.apt:
+    deb: /opt/logstash/logstash-{{ es_version }}.deb
   notify:
-  - restart logstash
+    - restart logstash
 
-- name: Add Logstash user to adm group (Debian).
-  user:
+- name: Add Logstash user to adm group (Debian)
+  ansible.builtin.user:
     name: logstash
     group: logstash
     groups: adm
   notify: restart logstash
 
 - name: Allow intra net access to Logstash
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -41,7 +41,7 @@
     jump: ACCEPT
 
 - name: Save iptables rules to /etc/sysconfig/iptables Logstash
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport "{{ logstash_listen_port_beats }}" -j ACCEPT'

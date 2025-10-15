@@ -1,69 +1,68 @@
-My Personal Ansible Roles
-===============
+# Personal Ansible Roles
 
-# How to use
+This repository contains a collection of reusable roles that I use to bootstrap monitoring, observability, and supporting services in my lab environments. The content has been refreshed to follow the [Ansible 2.10+ best practices](https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html), including modern task syntax, the new `group_vars` layout, and explicit use of the `ansible.builtin` collection.
 
-1. List your hosts in **hosts** file
-2. Edit roles which you want to install in target.yml
-3. Run `ansible-playbook -i hosts targets.yml`
+## Repository Layout
 
-## 1/ Check your syntax before running
-
-```bash
-ansible-playbook --syntax-check targets.yml
+```text
+ansible_roles/
+├── group_vars/          # Group specific variable files (e.g. staging/)
+├── hosts                # Example inventory file
+├── roles/               # Individual roles for services such as Prometheus, Nginx, etc.
+├── target.yml           # Example playbook that wires the roles together
+└── Readme.md            # This document
 ```
 
-## 2/ Dry-run mode
+Each role follows the standard Ansible role structure (`defaults`, `tasks`, `templates`, and so on). The `target.yml` playbook now declares the `ansible.builtin` collection and uses modern task syntax so it is ready to run with Ansible 2.10 or newer.
 
-```bash
-ansible-playbook --check targets.yml
-```
+## Getting Started
 
-## 3/ Run it
+1. **Install dependencies**
+   * Python 3.9+
+   * Ansible 2.10 or newer (`pip install ansible`)
 
-```bash
-ansible-playbook -i hosts targets.yml
-```
+2. **Inventory**
+   * Update the `hosts` file with your infrastructure details.
+   * Place per-environment variables in `group_vars/<group>/`.
 
-# Information
+3. **Select roles**
+   * Enable the roles you want in `target.yml` by uncommenting them under the `roles` section.
 
-Supported Roles:
+4. **Run the playbook**
+   ```bash
+   ansible-playbook -i hosts target.yml
+   ```
 
-- Prometheus Stack
-  - [x] Prometheus
-  - [x] AlertManager
-  - [x] Pushgateway
-  - [x] Grafana
-  - [x] Thanos (Query)
-  - [x] Thanos (Sidecar)
-  - [x] Prometheus Exporters
-    - [x] ElasitcSearch Exporter
-    - [x] ElasticSearch Exporter (Docker)
-- Proxy/LB
-  - [x] Nginx
-  - [x] NginxMonitor
-    - [x] VTS Module
-    - [x] Nginx Exporters
-      - [x] Nginx VTS Exporters
-      - [ ] ...
-- High Availability
-  - [x] keepalived
-- Service Discovery
-  - [x] Consul
-    - [x] Stand-alone
-    - [x] Cluster
-- ELK Stack
-  - [x] ElasticSearch
-  - [x] LogStack
-  - [x] Kibana
-  - [ ] Filebeat
-  - [ ] MetricBeat
-- Misc
-  - [x] MySQL
-  - [x] Docker
+## Recommended Workflow
 
-Suported OS
+| Step | Command | Purpose |
+| --- | --- | --- |
+| 1 | `ansible-playbook --syntax-check target.yml` | Validate the playbook parses correctly. |
+| 2 | `ansible-playbook --check -i hosts target.yml` | Perform a dry run without applying changes. |
+| 3 | `ansible-playbook -i hosts target.yml` | Apply the roles to the selected hosts. |
 
-- [x] Ubuntu
-- [ ] Centos
-- [ ] Debian
+## Available Roles
+
+The repository currently includes roles for:
+
+- **Prometheus Stack**: Prometheus, Alertmanager, Pushgateway, Thanos (query & sidecar), and Elasticsearch exporters (VM and Docker).
+- **Proxy / Load Balancing**: Nginx with monitoring extensions.
+- **High Availability**: Keepalived.
+- **Service Discovery**: Consul (stand-alone or clustered).
+- **Elastic Stack**: Elasticsearch, Logstash, Kibana.
+- **Miscellaneous**: MySQL, Docker, VSFTPD, and more.
+
+Refer to each role's `README.md` (where provided) for configuration specifics.
+
+## Contributing Improvements
+
+* Use `ansible-lint` or `yamllint` when modifying roles to maintain consistency.
+* Ensure new tasks use `loop`/`include_tasks` and Fully Qualified Collection Names (FQCNs) where appropriate.
+* Document any new variables or dependencies in the relevant role README.
+
+## Supported Platforms
+
+- ✅ Ubuntu (primary test target)
+- ⚠️ CentOS / Debian (not fully validated yet, contributions welcome!)
+
+Feel free to open issues or pull requests with suggestions, fixes, or additional roles.

@@ -1,15 +1,15 @@
 ---
 ###### Setup ES Exporter on Docker ####
 - name: get all ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_all_ipv4_addresses
 
 - name: get default ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_default_ipv4.address
 
 - name: Ensure docker python module for ansible is installed
-  pip:
+  ansible.builtin.pip:
     name: 
       - docker
       - docker-compose
@@ -42,19 +42,19 @@
   register: output
 
 - name: Debug install container using docker-compose module
-  debug:
+  ansible.builtin.debug:
     var: output
 
 - name: Debug install container using docker-compose module
-  debug:
+  ansible.builtin.debug:
     var: ES_URI
 
 - name: Debug install container using docker-compose module
-  debug:
+  ansible.builtin.debug:
     var: LISTEN_URI
 
 - name: Allow intra net access to ES Exporter
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -62,7 +62,7 @@
     jump: ACCEPT
 
 - name: Save iptables rules to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport {{ HOST_PORT }} -j ACCEPT'

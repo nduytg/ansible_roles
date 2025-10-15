@@ -1,20 +1,20 @@
 ---
 # tasks file for consul
 - name: get all ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_all_ipv4_addresses
 
 - name: get default ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_default_ipv4.address
 
 - name: Add group Consul
-  group: 
+  ansible.builtin.group: 
     name: consul
     state: present
 
 - name: Add user Consul
-  user: 
+  ansible.builtin.user: 
     name: consul
     group: consul
     state: present
@@ -22,49 +22,49 @@
     create_home: false
 
 - name: Setup Consul folders
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: consul
     group: consul
-  with_items:
+  loop:
     - /opt/consul
     - /var/consul
     - /etc/consul.d
 
 - name: Install unzip command
-  yum: 
+  ansible.builtin.yum: 
     update_cache: yes
     name: 
       - unzip
     state: present
 
 - name: Download consul tar ball
-  get_url: 
+  ansible.builtin.get_url: 
     url: https://releases.hashicorp.com/consul/{{CONSUL_VERSION}}/consul_{{CONSUL_VERSION}}_linux_amd64.zip
     dest: /opt/consul/consul_{{CONSUL_VERSION}}_linux_amd64.zip
 
 - name: Unzip consul zip file
-  unarchive:
+  ansible.builtin.unarchive:
     src: /opt/consul/consul_{{CONSUL_VERSION}}_linux_amd64.zip
     dest: /opt/consul/
     remote_src: yes
 
 - name: Copy binary files
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     remote_src: yes
     owner: consul
     group: consul
     mode: '0755'
-  with_items:
-      - { src: '/opt/consul/consul', dest: '/usr/local/bin/' }
+  loop:
+    - { src: '/opt/consul/consul', dest: '/usr/local/bin/' }
   notify:
     - restart consul
 
 - name: Copy config for consul stand alone
-  template:
+  ansible.builtin.template:
     src: consul_one_node.json.j2
     dest: /etc/consul.d/consul.json
     owner: consul
@@ -74,7 +74,7 @@
   - reload consul
 
 - name: Copy config for consul cluster
-  template:
+  ansible.builtin.template:
     src: consul_cluster.json.j2
     dest: /etc/consul.d/consul.json
     owner: consul
@@ -84,14 +84,14 @@
   - reload consul
 
 - name: Copy systemd file
-  copy:
+  ansible.builtin.copy:
     src: consul.service
     dest: /etc/systemd/system/consul.service
   notify:
     - restart consul
 
 - name: Allow intra net access to Consul TCP
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -99,7 +99,7 @@
     jump: ACCEPT
 
 - name: Allow intra net access to Consul LAN Gossip TCP
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -107,7 +107,7 @@
     jump: ACCEPT
 
 - name: Allow intra net access to Consul WAN Gossip TCP
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -115,7 +115,7 @@
     jump: ACCEPT
 
 - name: Allow intra net access to Consul LAN Gossip UDP
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: udp
     source: 10.0.0.0/8
@@ -123,7 +123,7 @@
     jump: ACCEPT
 
 - name: Allow intra net access to Consul WAN Gossip UDP
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: udp
     source: 10.0.0.0/8
@@ -131,7 +131,7 @@
     jump: ACCEPT
 
 - name: Allow intra net access to Consul TCP
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -139,7 +139,7 @@
     jump: ACCEPT
 
 - name: Allow intra net access to Consul HTTP API
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -147,7 +147,7 @@
     jump: ACCEPT
 
 - name: Allow intra net access to Consul DNS TCP
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -155,7 +155,7 @@
     jump: ACCEPT
 
 - name: Allow intra net access to Consul DNS UDP
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: udp
     source: 10.0.0.0/8
@@ -163,49 +163,49 @@
     jump: ACCEPT
 
 - name: Save iptables rules port 8300 to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8300 -j ACCEPT'
 
 - name: Save iptables rules port 8301 TCP to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8301 -j ACCEPT'
 
 - name: Save iptables rules port 8302 TCP to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8302 -j ACCEPT'
 
 - name: Save iptables rules port 8500 to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8500 -j ACCEPT'
 
 - name: Save iptables rules port 8600 to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 8600 -j ACCEPT'
 
 - name: Save iptables rules port 8301 UDP to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p udp --dport 8301 -j ACCEPT'
 
 - name: Save iptables rules port 8302 UDP to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p udp --dport 8302 -j ACCEPT'
 
 - name: Save iptables rules port 8600  UDP to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p udp --dport 8600 -j ACCEPT'

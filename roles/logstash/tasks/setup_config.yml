@@ -1,40 +1,40 @@
 ---
-- name: Create Logstash configuration files.
-  template:
+- name: Create Logstash configuration files
+  ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/etc/logstash/conf.d/{{ item }}"
     owner: root
     group: root
-    mode: 0644
-  with_items:
+    mode: '0644'
+  loop:
     - 01-beats-input.conf
     - 30-elasticsearch-output.conf
   notify: restart logstash
 
-- name: Create Logstash filters.
-  copy:
+- name: Create Logstash filters
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: "/etc/logstash/conf.d/{{ item }}"
     owner: root
     group: root
-    mode: 0644
-  with_items:
+    mode: '0644'
+  loop:
     - 10-syslog.conf
     - 11-nginx.conf
   notify: restart logstash
 
-- name: Create Logstash configuration file for local syslog.
-  template:
+- name: Create Logstash configuration file for local syslog
+  ansible.builtin.template:
     src: 02-local-syslog-input.conf.j2
     dest: /etc/logstash/conf.d/02-local-syslog-input.conf
     owner: root
     group: root
-    mode: 0644
+    mode: '0644'
   when: logstash_monitor_local_syslog | bool
   notify: restart logstash
 
-- name: Ensure configuration for local syslog is absent if disabled.
-  file:
+- name: Ensure configuration for local syslog is absent if disabled
+  ansible.builtin.file:
     path: /etc/logstash/conf.d/02-local-syslog-input.conf
     state: absent
   when: not logstash_monitor_local_syslog

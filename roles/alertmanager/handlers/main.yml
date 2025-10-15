@@ -1,14 +1,13 @@
 ---
 # handlers file for alertmanager
-  - name: restart alertmanager
-    systemd:
-      name: alertmanager
-      daemon_reload: true
-      state: restarted
-      enabled: yes
-      
-  - name: reload alertmanager
-    systemd:
-      name: alertmanager
-      state: reloaded
+- name: restart alertmanager
+  ansible.builtin.systemd:
+    name: alertmanager
+    daemon_reload: true
+    state: restarted
+    enabled: true
 
+- name: reload alertmanager
+  ansible.builtin.systemd:
+    name: alertmanager
+    state: reloaded

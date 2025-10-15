@@ -2,20 +2,20 @@
 ###### Setup ES Exporter ####
 
 - name: get all ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_all_ipv4_addresses
 
 - name: get default ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_default_ipv4.address
 
 - name: Add group ES Exporter
-  group: 
+  ansible.builtin.group: 
     name: elasticsearch_exporter
     state: present
 
 - name: Add user ES Exporter
-  user: 
+  ansible.builtin.user: 
     name: elasticsearch_exporter
     group: elasticsearch_exporter
     state: present
@@ -23,35 +23,35 @@
     create_home: false
 
 - name: Setup ES Exporter folders
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: elasticsearch_exporter
     group: elasticsearch_exporter
-  with_items:
+  loop:
     - "{{ES_EXPORTER_INSTALL_DIR}}"
 
 - name: Download elasticsearch_exporter tar ball
-  get_url: 
+  ansible.builtin.get_url: 
     url: https://github.com/justwatchcom/elasticsearch_exporter/releases/download/v{{EXPORTER_VERSION}}/elasticsearch_exporter-{{EXPORTER_VERSION}}.linux-amd64.tar.gz
     dest: "{{ES_EXPORTER_INSTALL_DIR}}/elasticsearch_exporter-{{EXPORTER_VERSION}}.linux-amd64.tar.gz"
 
 - name: Unarchive elasticsearch_exporter tar ball
-  unarchive:
+  ansible.builtin.unarchive:
     src: /opt/elasticsearch_exporter/elasticsearch_exporter-{{EXPORTER_VERSION}}.linux-amd64.tar.gz
     dest: /opt/elasticsearch_exporter/
     remote_src: yes
     extra_opts: "--strip-components=1"
 
 - name: Copy systemd files
-  template:
+  ansible.builtin.template:
     src: elasticsearch_exporter.service.j2
     dest: /etc/systemd/system/elasticsearch_exporter.service
   notify:
   - restart elasticsearch exporter
 
 - name: Allow intra net access to ES Exporter
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -59,6 +59,6 @@
     jump: ACCEPT
 
 - name: Save iptables rules to /etc/sysconfig/iptables (9114)
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 9114 -j ACCEPT'

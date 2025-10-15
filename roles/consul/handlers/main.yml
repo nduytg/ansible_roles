@@ -2,7 +2,7 @@
 # handlers file for consul
 - name: restart consul
   become: true
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: true
     name: consul
     state: restarted
@@ -10,6 +10,6 @@
 
 - name: reload consul
   become: true
-  systemd:
+  ansible.builtin.systemd:
     name: consul
     state: reloaded

@@ -1,22 +1,22 @@
 - name: get all ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_all_ipv4_addresses
 
 - name: check list ip from inventory
-  debug: 
+  ansible.builtin.debug: 
     var: inventory_hostname.ansible_default_ipv4.address
 
 - name: get default ip
-  debug: 
+  ansible.builtin.debug: 
     var: ansible_default_ipv4.address
 
 - name: Add group Thanos
-  group: 
+  ansible.builtin.group: 
     name: thanos
     state: present
 
 - name: Add user Thanos
-  user: 
+  ansible.builtin.user: 
     name: thanos
     group: thanos
     state: present
@@ -24,50 +24,50 @@
     create_home: false
 
 - name: Setup Thanos folders
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: thanos
     group: thanos
-  with_items:
+  loop:
     - /opt/thanos
     - /etc/thanos/query
 
 - name: Download thanos tar ball
-  get_url: 
+  ansible.builtin.get_url: 
     url: https://github.com/thanos-io/thanos/releases/download/v{{THANOS_VERSION}}/thanos-{{THANOS_VERSION}}.linux-amd64.tar.gz
     dest: /opt/thanos/thanos-{{THANOS_VERSION}}.linux-amd64.tar.gz
 
 - name: Unarchive thanos tar ball
-  unarchive:
+  ansible.builtin.unarchive:
     src: /opt/thanos/thanos-{{THANOS_VERSION}}.linux-amd64.tar.gz
     dest: /opt/thanos/
     remote_src: yes
     extra_opts: "--strip-components=1"
 
 - name: Copy binary files
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     remote_src: yes
     owner: thanos
     group: thanos
     mode: '0755'
-  with_items:
-      - { src: '/opt/thanos/thanos', dest: '/usr/local/bin/' }
+  loop:
+    - { src: '/opt/thanos/thanos', dest: '/usr/local/bin/' }
   notify:
     - restart thanos-query
     #- restart thanos-sidecar
 
 - name: Copy systemd file
-  template:
+  ansible.builtin.template:
     src: thanos-query.service.j2
     dest: /etc/systemd/system/thanos-query.service
   notify:
     - restart thanos-query
 
 - name: Allow intra net access to HTTP endpoint for Query UI
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -75,7 +75,7 @@
     jump: ACCEPT
 
 - name: Allow intra net access to GRPC endpoint for StoreAPI
-  iptables:
+  ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     source: 10.0.0.0/8
@@ -83,13 +83,13 @@
     jump: ACCEPT
 
 - name: Save iptables port 19192 rules to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 19192 -j ACCEPT'
 
 - name: Save iptables port 19092 rules to /etc/sysconfig/iptables
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sysconfig/iptables
     insertafter: '^# END SA MANAGED BLOCK '
     line: '-A INPUT -s 10.0.0.0/8 -p tcp -m tcp --dport 19092 -j ACCEPT'
